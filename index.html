@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<script>
+MathJax = {
+   loader: {
+      load: ['[custom]/siunitx.js'],
+      paths: {custom: '.'}
+   },
+   tex: {
+      packages: {'[+]': ['siunitx']}
+   }
+};
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<body>
+
+	$$ \frac{a}{ba} $$
+
+	$$ \mtext{testing!} $$
+
+	$$ ^{33}_{44}Ar^{3+} $$
+
+	$$ 1.25\ \mathrm{\frac{kg\ m^2}{s^2}} $$
+
+	$$ \unit{\kilo\gram\meter\squared\per\second\squared} $$
+
+	$$ \unit{kg.m^2.s^{-2}} $$
+
+	$$ \unit{a} $$
+
+	$$ \unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second\squared} $$
+
+	$$ \unit[per-mode=symbol]{fff} $$
+
+	$$ \qty{1.25}{\kilo\gram\meter\squared\per\second\squared} $$
+</body>
+
+</html>
