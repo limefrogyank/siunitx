@@ -1,20 +1,30 @@
 // adapted from https://stackoverflow.com/a/21070876/1938624
 
-export class TwoWayMap{
-	private map: Map<string,string>;
-	private reverseMap: Map<string,string>;
+export class TwoWayMap<T,U>{
+	private map: Map<T,U>;
+	private reverseMap: Map<U,T>;
 
-	constructor(map:Map<string,string>){
+	constructor(map:Map<T,U>){
 		this.map = map;
-		this.reverseMap = new Map<string,string>();
+		this.reverseMap = new Map<U,T>();
 
 		map.forEach((v,k,m)=>{
 			this.reverseMap.set(v,k);
 		});
 	}
 
-	public get(key:string) { return this.map.get(key); }
+	public get(key:T) { return this.map.get(key); }
 
-	public revGet(key:string) { return this.reverseMap.get(key); }
+	public revGet(key:U) { return this.reverseMap.get(key); }
+
+	public keys() { return this.map.keys(); }
+	public values() { return this.reverseMap.keys(); }
+
+	public forEach(callbackfn: (value: U, key: T, map: Map<T, U>) => void, thisArg?: any) { return this.map.forEach(callbackfn);}
 	
+
+	public array() { return [...this.map];}
+	public arrayReverse() { return [...this.reverseMap];}
+
+
 }

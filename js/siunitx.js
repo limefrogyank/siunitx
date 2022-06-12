@@ -1,6 +1,6 @@
 import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
-import { UnitMethods } from './unitMethods';
+import { UnitMappings, UnitMethods } from './unitMethods';
 /**
  * Allowed attributes on any token element other than the ones with default values
  */
@@ -23,43 +23,42 @@ function parseAngle(parser, text) {
     node.appendChild(inner);
     return node;
 }
-var unitMap = new CommandMap('unitMap', {
-    kilo: ['parsePrefixToken']
-}, UnitMethods);
+var unitMap = new CommandMap('unitMap', UnitMappings, UnitMethods);
+console.log(unitMap);
 var siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
     ang: ['siunitxToken', 'ang'],
     unit: ['siunitxToken', 'unit'],
     qty: ['siunitxToken', 'qty']
 }, {
-    siunitxToken: function (parser, name, type) {
-        var def = parser.GetBrackets(name);
+    siunitxToken: (parser, name, type) => {
+        const def = parser.GetBrackets(name);
         console.log("attributes are ");
         console.log(def);
         switch (name) {
             case "\\num":
                 {
-                    var node = parseNumber(parser, parser.GetArgument(name));
+                    const node = parseNumber(parser, parser.GetArgument(name));
                     parser.Push(node);
                     break;
                 }
             case "\\ang":
                 {
-                    var node = parseAngle(parser, parser.GetArgument(name));
+                    const node = parseAngle(parser, parser.GetArgument(name));
                     parser.Push(node);
                     break;
                 }
             case "\\unit":
                 {
-                    var node = parser.ParseArg(name);
+                    const node = parser.ParseArg(name);
                     parser.Push(node);
                     break;
                 }
             case "\\qty":
                 {
-                    var node1 = parseNumber(parser, parser.GetArgument(name));
+                    const node1 = parseNumber(parser, parser.GetArgument(name));
                     parser.Push(node1);
-                    var node2 = parser.ParseArg(name);
+                    const node2 = parser.ParseArg(name);
                     parser.Push(node2);
                     break;
                 }

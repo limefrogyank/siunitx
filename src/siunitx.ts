@@ -3,7 +3,8 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { UnitMethods } from './unitMethods';
+import { UnitMappings, UnitMethods } from './unitMethods';
+import { prefixSymbol } from './units';
 
 /**
  * Allowed attributes on any token element other than the ones with default values
@@ -30,9 +31,10 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
     return node;
 }
 
-var unitMap = new CommandMap('unitMap', {
-    kilo: ['parsePrefixToken']
-}, UnitMethods);
+var unitMap = new CommandMap('unitMap', 
+	UnitMappings,
+	UnitMethods);
+console.log(unitMap);
 
 var siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
