@@ -3,6 +3,7 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
+import { UnitMethods } from './unitMethods';
 
 /**
  * Allowed attributes on any token element other than the ones with default values
@@ -14,19 +15,6 @@ var ALLOWED = {
     class: true,
     'per-mode': true
 };
-
-var unitMap = new CommandMap('unitMap', {
-    kilo: ['prefixToken']
-}, {
-    prefixToken: (parser, name, type) => {
-        console.log("name: " + name);
-        console.log("type: " + type);
-        var mml = parser.create('node', 'mtext');
-        var text = parser.create('text', 'testing prefix');
-        mml.appendChild(text);
-        parser.Push(mml);
-    }
-});
 
 function parseNumber(parser:TexParser, text:string) :MmlNode{
     var node = parser.create('node', 'mtext');
@@ -42,6 +30,10 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
     return node;
 }
 
+var unitMap = new CommandMap('unitMap', {
+    kilo: ['parsePrefixToken']
+}, UnitMethods);
+
 var siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
     ang: ['siunitxToken', 'ang'],
@@ -49,14 +41,10 @@ var siunitxMap = new CommandMap('siunitxMap', {
     qty: ['siunitxToken', 'qty']
 }, {
     siunitxToken: (parser, name, type) => {
-        console.log('got a unit');
-        console.log(name);
-        console.log(type);
-        //const typeClass = (<any>parser.configuration.nodeFactory).mmlFactory.getNodeClass(type);
-        //console.log("typeclass is " + typeClass);
-        const def = parser.GetBrackets(name as string);
+		const def = parser.GetBrackets(name as string);
         console.log("attributes are ");
         console.log(def);
+
         switch (name) {
             case "\\num":
                 {

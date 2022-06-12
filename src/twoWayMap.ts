@@ -16,4 +16,5 @@ export class TwoWayMap{
 	public get(key:string) { return this.map.get(key); }
 
 	public revGet(key:string) { return this.reverseMap.get(key); }
+	
 }
