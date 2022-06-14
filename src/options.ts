@@ -61,16 +61,12 @@ function camelCase(input: string) {
 }
 
 export function processOptions(optionString: string) : IOptions {
-    console.log("attributes are ");
-    console.log(optionString);
     const options : IOptions = {};
 	if (optionString != null){
 		const optionArray = optionString.split(',');
-		console.log(optionArray);
 		optionArray.forEach((v,i,a)=>{
 			let args = v.split('=');
 			let prop = camelCase(args[0].trim());
-			console.log(prop);
 			if (args.length > 1){
 				options[prop] = args[1].trim();
 			} else {
@@ -79,6 +75,5 @@ export function processOptions(optionString: string) : IOptions {
 		
 		});
 	}
-	console.log(options);
     return options;
 }
