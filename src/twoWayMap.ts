@@ -14,7 +14,10 @@ export class TwoWayMap<T,U>{
 				this.reverseMap.set(v,k);
 			}
 		});
+		
 	}
+
+	public has(key:T) {return this.map.has(key);}
 
 	public get(key:T) { return this.map.get(key); }
 

@@ -4,7 +4,7 @@ import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { findOptions, IUnitOptions, processOptions } from './options';
-import { manualUnitParse, UnitMappings, UnitMethods } from './unitMethods';
+import { unitParse } from './unitMethods';
 import { prefixSymbol } from './units';
 
 /**
@@ -33,9 +33,9 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
 }
 
 
-const unitMap = new CommandMap('unitMap', 
-	UnitMappings,
-	UnitMethods);
+// const unitMap = new CommandMap('unitMap', 
+// 	UnitMappings,
+// 	UnitMethods);
 
 const siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
@@ -63,13 +63,8 @@ const siunitxMap = new CommandMap('siunitxMap', {
             case "\\unit":
                 {
                     const text = parser.GetArgument(name);
-                    if (text.startsWith('\\')){
-                        const node = new TexParser(text, parser.stack.env, parser.configuration).mml();
-                        parser.Push(node);
-                    } else {
-                        const node = manualUnitParse(parser, text);
-                        parser.Push(node);
-                    }
+                    const node = unitParse(parser, text);
+                    parser.Push(node);
                     break;
                 }
             case "\\qty":
@@ -77,13 +72,8 @@ const siunitxMap = new CommandMap('siunitxMap', {
                     const node1 = parseNumber(parser, parser.GetArgument(name));
                     parser.Push(node1);
                     const text = parser.GetArgument(name);
-                    if (text.startsWith('\\')){
-                        const node = new TexParser(text, parser.stack.env, parser.configuration).mml();
-                        parser.Push(node);
-                    } else {
-                        const node = manualUnitParse(parser, text);
-                        parser.Push(node);
-                    }
+                    const node = unitParse(parser, text);
+                    parser.Push(node);
                     break;
                 }
         }
@@ -91,4 +81,4 @@ const siunitxMap = new CommandMap('siunitxMap', {
     }
 });
 
-var siunitxConfiguration = Configuration.create('siunitx', { handler: { macro: ['siunitxMap', 'unitMap'] } });
+var siunitxConfiguration = Configuration.create('siunitx', { handler: { macro: ['siunitxMap'] } });
