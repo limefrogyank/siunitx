@@ -9,7 +9,10 @@ export class TwoWayMap<T,U>{
 		this.reverseMap = new Map<U,T>();
 
 		map.forEach((v,k,m)=>{
-			this.reverseMap.set(v,k);
+			// This checks for multiple names for a unit.  Use the first name by default for the reverse lookup.
+			if (!this.reverseMap.has(v)){
+				this.reverseMap.set(v,k);
+			}
 		});
 	}
 

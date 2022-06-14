@@ -3,7 +3,7 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { UnitMappings, UnitMethods } from './unitMethods';
+import { manualUnitParse, UnitMappings, UnitMethods } from './unitMethods';
 import { prefixSymbol } from './units';
 
 /**
@@ -31,12 +31,12 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
     return node;
 }
 
-var unitMap = new CommandMap('unitMap', 
+const unitMap = new CommandMap('unitMap', 
 	UnitMappings,
 	UnitMethods);
 console.log(unitMap);
 
-var siunitxMap = new CommandMap('siunitxMap', {
+const siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
     ang: ['siunitxToken', 'ang'],
     unit: ['siunitxToken', 'unit'],
@@ -46,6 +46,8 @@ var siunitxMap = new CommandMap('siunitxMap', {
 		const def = parser.GetBrackets(name as string);
         console.log("attributes are ");
         console.log(def);
+
+        
 
         switch (name) {
             case "\\num":
@@ -62,16 +64,28 @@ var siunitxMap = new CommandMap('siunitxMap', {
                 }
             case "\\unit":
                 {
-                    const node = parser.ParseArg(name);
-                    parser.Push(node);
+                    const text = parser.GetArgument(name);
+                    if (text.startsWith('\\')){
+                        const node = new TexParser(text, parser.stack.env, parser.configuration).mml();
+                        parser.Push(node);
+                    } else {
+                        const node = manualUnitParse(parser, text);
+                        parser.Push(node);
+                    }
                     break;
                 }
             case "\\qty":
                 {
                     const node1 = parseNumber(parser, parser.GetArgument(name));
                     parser.Push(node1);
-                    const node2 = parser.ParseArg(name);
-                    parser.Push(node2);
+                    const text = parser.GetArgument(name);
+                    if (text.startsWith('\\')){
+                        const node = new TexParser(text, parser.stack.env, parser.configuration).mml();
+                        parser.Push(node);
+                    } else {
+                        const node = manualUnitParse(parser, text);
+                        parser.Push(node);
+                    }
                     break;
                 }
         }
