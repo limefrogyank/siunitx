@@ -19,6 +19,7 @@ export const prefixSymbol: TwoWayMap<string,string> = new TwoWayMap<string,strin
 	['kilo','k'],
 	['hecto','h'],
 	['deka','da'],
+	['deca','da'],
 	['deci','d'],
 	['centi','c'],
 	['milli','m'],

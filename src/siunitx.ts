@@ -3,6 +3,7 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
+import { findOptions, IUnitOptions, processOptions } from './options';
 import { manualUnitParse, UnitMappings, UnitMethods } from './unitMethods';
 import { prefixSymbol } from './units';
 
@@ -31,10 +32,10 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
     return node;
 }
 
+
 const unitMap = new CommandMap('unitMap', 
 	UnitMappings,
 	UnitMethods);
-console.log(unitMap);
 
 const siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
@@ -43,11 +44,8 @@ const siunitxMap = new CommandMap('siunitxMap', {
     qty: ['siunitxToken', 'qty']
 }, {
     siunitxToken: (parser, name, type) => {
-		const def = parser.GetBrackets(name as string);
-        console.log("attributes are ");
-        console.log(def);
-
-        
+        const options = processOptions(findOptions(parser));
+        parser.configuration.packageData.set('siunitx', options);
 
         switch (name) {
             case "\\num":
