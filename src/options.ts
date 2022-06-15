@@ -1,33 +1,33 @@
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 
-type PerMode = 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol';
+type PerMode = 'power'| 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol';
 type QualifierMode = 'subscript' | 'bracket' | 'combine' | 'phrase';
 
 export interface IUnitOptions {
-	interUnitProduct?: string;
+	interUnitProduct: string;
 
-	perMode?: PerMode;
-	displayPerMode?: PerMode;
-	inlinePerMode?: PerMode;
-	perSymbol?: string; 
-	fractionCommand?: string;
-	bracketUnitDenominator?: boolean;
+	perMode: PerMode;
+	displayPerMode?: PerMode;	// not implemented, global setting
+	inlinePerMode?: PerMode;	// not implemented, global setting
+	perSymbol: string; 
+	fractionCommand: string;
+	bracketUnitDenominator: boolean;
 
-	perSymbolScriptCorrection?: string;
+	perSymbolScriptCorrection: string;
 
-	stickyPer?: boolean;
+	stickyPer: boolean;
 
-	qualifierMode?: QualifierMode;
-	qualifierPhrase?: string;
+	qualifierMode: QualifierMode;
+	qualifierPhrase: string;
 
-	powerHalfAsSqrt?: boolean;
+	powerHalfAsSqrt: boolean;
 
-	parseUnits?: boolean;
+	parseUnits: boolean;
 
-	forbidLiteralUnits?: boolean;
+	forbidLiteralUnits: boolean;
 
-	unitFontCommand?: string;
+	unitFontCommand: string;
 }
 
 export interface INumOptions{
@@ -35,6 +35,22 @@ export interface INumOptions{
 } 
 
 export interface IOptions extends IUnitOptions, INumOptions { };
+
+const UnitOptionDefaults: IUnitOptions = {
+    bracketUnitDenominator: true,
+    forbidLiteralUnits: false,
+    fractionCommand: '\\frac',
+	interUnitProduct: '\\,',
+	parseUnits: true,
+	perMode: 'power',
+	perSymbolScriptCorrection: '\\!',
+	perSymbol: '/',
+	powerHalfAsSqrt: false,
+	qualifierMode: 'subscript',
+	qualifierPhrase: '',
+	stickyPer: false,
+	unitFontCommand: '\\mathrm'
+}
 
 // Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
 // This method just gets the bracketed option string only.
@@ -61,11 +77,13 @@ function camelCase(input: string) {
 }
 
 export function processOptions(optionString: string) : IOptions {
-    const options : IOptions = {};
+    const options : IOptions = {...UnitOptionDefaults};
 	if (optionString != null){
 		const optionArray = optionString.split(',');
 		optionArray.forEach((v,i,a)=>{
+			console.log(v);
 			let args = v.split('=');
+			console.log(args);
 			let prop = camelCase(args[0].trim());
 			if (args.length > 1){
 				options[prop] = args[1].trim();
@@ -75,5 +93,6 @@ export function processOptions(optionString: string) : IOptions {
 		
 		});
 	}
+	console.log(options);
     return options;
 }

@@ -45,7 +45,7 @@ const siunitxMap = new CommandMap('siunitxMap', {
 }, {
     siunitxToken: (parser, name, type) => {
         const options = processOptions(findOptions(parser));
-        parser.configuration.packageData.set('siunitx', options);
+        //parser.configuration.packageData.set('siunitx', options);
 
         switch (name) {
             case "\\num":
@@ -63,7 +63,7 @@ const siunitxMap = new CommandMap('siunitxMap', {
             case "\\unit":
                 {
                     const text = parser.GetArgument(name);
-                    const node = unitParse(parser, text);
+                    const node = unitParse(parser, text, options);
                     parser.Push(node);
                     break;
                 }
@@ -72,7 +72,7 @@ const siunitxMap = new CommandMap('siunitxMap', {
                     const node1 = parseNumber(parser, parser.GetArgument(name));
                     parser.Push(node1);
                     const text = parser.GetArgument(name);
-                    const node = unitParse(parser, text);
+                    const node = unitParse(parser, text, options);
                     parser.Push(node);
                     break;
                 }

@@ -3,7 +3,7 @@ import { StackItem } from "mathjax-full/js/input/tex/StackItem";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { ParseMethod, ParseResult } from "mathjax-full/js/input/tex/Types";
-import { IUnitOptions, processOptions } from "./options";
+import { IOptions, IUnitOptions, processOptions } from "./options";
 import { prefixSymbol, unitSymbol } from "./units";
 
 interface IUnitPiece {
@@ -15,6 +15,7 @@ interface IUnitPiece {
 	cancel?: boolean;
 	highlight?: string; // color
 }
+
 
 interface IUnitMacroProcessResult {
 	type: 'prefix' | 'unit' | 'previous' | 'next';  // either a prefix, unit, or modifier for previous or next unit
@@ -45,10 +46,10 @@ function processUnitMacro(macro:string, parser:TexParser) : IUnitMacroProcessRes
 	}
 
 	if (unitSymbol.has(macro)){
-		return {type: 'unit', result: {symbol: unitSymbol.get(macro)}};
+		return {type: 'unit', result: {symbol: unitSymbol.get(macro), prefix: ''}};
 	}
 
-	return {type: 'unit', result: {symbol: 'X'}};
+	return {type: 'unit', result: {symbol: 'X', prefix: ''}};
 
 }
 
@@ -65,10 +66,10 @@ function processModifierMacro(macro:string, parser:TexParser) : IUnitMacroProces
 			return {type: "previous", result: {power: 3}};
 		case "tothe":
 			arg = parser.GetArgument('tothe', true);
-			return {type: "previous", result: {power: arg}};
+			return {type: "previous", result: {power: +arg}};  // need to force interpretation as number
 		case "raiseto":
 			arg = parser.GetArgument('raiseto');
-			return {type: "next", result: {power: arg}};
+			return {type: "next", result: {power: +arg}};
 		case "per":
 			return {type: "next", result: {position: 'denominator'}}
 		case "of":
@@ -84,8 +85,130 @@ function processModifierMacro(macro:string, parser:TexParser) : IUnitMacroProces
 	}
 }
 
-export function unitParse(parser: TexParser, text:string): MmlNode {
-	const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
+function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower: boolean = false) : {latex: string, superscriptPresent:boolean }{
+	let unitLatex = '';
+	if (unitPiece.cancel){
+		unitLatex += '\\cancel{';
+	}
+	if (unitPiece.highlight){
+		unitLatex += '{\\color{' + unitPiece.highlight + '}';
+	}
+	unitLatex += options.unitFontCommand + '{' + unitPiece.prefix + unitPiece.symbol + '}';
+	const power = unitPiece.power != null 
+		? (absPower 
+			? Math.abs(unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1)) 
+			: unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1)) 
+		: 1;
+	if (power != null && power != 1 ){
+		unitLatex += '^{' + power + '}';
+	}
+	if (unitPiece.cancel){
+		unitLatex += '}';
+	}
+	if (unitPiece.highlight){
+		unitLatex += '}';
+	}
+	return {latex: unitLatex, superscriptPresent: power != 1 };
+}
+
+function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: IUnitOptions) : MmlNode {
+	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
+	let mml: MmlNode;
+	let texString:string;
+	let perForSingle: boolean;
+	if (unitPieces.length >= 2 && unitPieces.filter((v)=>{
+		const power = v.power != null 
+		? (v.power * (v.position == 'denominator' ? -1 : 1)) 
+		: 1;
+		return Math.sign(power) == -1;
+	}).length == 1 && options.perMode == 'single-symbol'){
+		perForSingle = true;
+	}
+	if (options.perMode == 'fraction' || options.perMode == 'symbol'|| options.perMode == 'repeated-symbol' || perForSingle){
+		let numerator = '';
+		let denominator = '';
+		let lastNumeratorHadSuperscript=false;
+		unitPieces.forEach((v,i,a)=>{
+			let latexResult;			
+			if (v.position == 'denominator' || (v.power != null && v.power < 0)){
+				latexResult = unitLatex(v, options, options.perMode == 'fraction' || options.perMode == 'symbol' || options.perMode == 'repeated-symbol' || options.perMode == "single-symbol" || perForSingle);  
+
+				if (denominator != ''){
+					if (options.perMode == 'repeated-symbol'){
+						if (latexResult.superscriptPresent){
+							denominator += options.perSymbolScriptCorrection;
+						}
+						denominator += options.perSymbol;
+					} else {
+						denominator += options.interUnitProduct;
+					}
+				}					
+				denominator += latexResult.latex;
+			} else {
+				latexResult = unitLatex(v, options, options.perMode == 'fraction' || options.perMode == 'symbol' || options.perMode == 'repeated-symbol' || options.perMode == "single-symbol" || perForSingle);  
+				lastNumeratorHadSuperscript = latexResult.superscriptPresent;
+				if (numerator != ''){
+					numerator += options.interUnitProduct;
+				}	
+				numerator += latexResult.latex;
+			}
+		});
+
+		// if no numerator, use 1... but use nothing if denominator is empty, too
+		if (numerator == '' && denominator != ''){
+			numerator = '1';
+		}
+		// if no denominator, then no fraction needed.
+		if (denominator != ''){
+			if (options.perMode == 'fraction'){
+				texString = options.fractionCommand + '{' + numerator + '}{' + denominator + '}';
+			}
+			else if (options.perMode == 'repeated-symbol' || options.perMode == 'symbol' || perForSingle){
+				texString = numerator + (lastNumeratorHadSuperscript ? options.perSymbolScriptCorrection : '') + options.perSymbol + denominator;
+			} 
+			else {
+				console.log("shouldn't be here");
+			}
+		} else {
+			texString = numerator;
+		}
+
+	} else {
+		if (options.perMode == 'power-positive-first'){
+			unitPieces = unitPieces.sort((x,y)=>{
+				let a = x.power != null ? x : 1;
+				if (x.position == 'denominator'){
+					a = -a;
+				}
+				let b = y.power != null ? y : 1;
+				if (y.position == 'denominator'){
+					b = -b;
+				}
+				if (a > b) return 1;
+				else if (a < b) return -1;
+				else return 0;
+			});
+		}
+		let latex = '';
+		let lastHadSuperscript=false;
+		unitPieces.forEach((v,i,a)=>{
+			let latexResult = unitLatex(v, options);  
+			lastHadSuperscript = latexResult.superscriptPresent;
+			if (latex != ''){
+				latex += options.interUnitProduct;
+			}	
+			latex += latexResult.latex;
+			
+		});
+
+		texString = latex;
+	}
+	mml = (new TexParser(texString, parser.stack.env, parser.configuration)).mml();	
+	return mml;
+}
+
+export function unitParse(parser: TexParser, text:string, options: IOptions): MmlNode {
+	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
 
 	// argument contains either macros or it's just plain text
@@ -115,29 +238,76 @@ export function unitParse(parser: TexParser, text:string): MmlNode {
 				case 'unit':
 					if (nextModifier != null){
 						processedMacro.result = Object.assign(processedMacro.result, nextModifier);
-						nextModifier = null;
+						if (options.perMode == 'repeated-symbol'){
+							let denom = nextModifier.position == 'denominator';
+							nextModifier = null;
+							if (denom){
+								nextModifier = {position: 'denominator'};
+							}
+						} else {
+							nextModifier = null;
+						}
 					}
 					unitPieces.push(processedMacro.result);
 					break;
 			}
 		}
-		console.log(unitPieces);
+
 	} else {
-		unitPieces.push(...unitParsePlainText(parser, text));
+		unitPieces.push(...parsePlainTextUnits(parser, text));
+		console.log(unitPieces);
 	}
+
+	const mml = displayUnits(parser, unitPieces, options);
 	
-	var mml = parser.create('node', 'mtext');
-	mml.attributes.set('aria-label', "This is a unit parse result.");  // THIS IS HOW YOU ADD SPEECH.
-	var rtext = parser.create('text', 'testing unit parsing ');
-	mml.appendChild(rtext);
+	// var mml = parser.create('node', 'mtext');
+	// mml.attributes.set('aria-label', "This is a unit parse result.");  // THIS IS HOW YOU ADD SPEECH.
+	// var rtext = parser.create('text', 'testing unit parsing ');
+	// mml.appendChild(rtext);
 	return mml;
 }
 
-function unitParsePlainText(parser:TexParser, text:string): Array<IUnitPiece> {
-	const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
+function parsePlainTextUnits(parser:TexParser, text:string): Array<IUnitPiece> {
+	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
+	const subParser = new TexParser(text, parser.stack.env, parser.configuration);
+	subParser.i=0;
 
-	console.log("TO IMPLEMENT");
+	let j = 0;
+	let unitPiece:IUnitPiece = { position: 'numerator'};
+	let isDenominator: boolean=false;
+	let prefixUnit:string = '';
+	while (subParser.i < subParser.string.length){
+		switch (subParser.string.charAt(subParser.i++)) {
+			case '~':
+			case '.':
+				//process prefix-unit string into unitPiece
+				unitPieces.push(unitPiece);
+				unitPiece = {position: isDenominator ? 'denominator' : 'numerator'};
+				prefixUnit = ''
+				break;
+			case '/':
+				//process prefix-unit string into unitPiece
+				unitPieces.push(unitPiece);
+				unitPiece = {position: isDenominator ? 'denominator' : 'numerator'};
+				prefixUnit = ''
+				isDenominator=true;
+				break;
+			case '^':
+				//power
+				break;
+			case '_':
+				//of
+				break;
+			default:
+				//add char to prefix-unit string
+				prefixUnit += subParser.string.charAt(subParser.i);
+				break;
+		}
+		//return parser.string.slice(j, parser.i -1);
+	}
+	throw new TexError('MissingCloseBracket',
+	'Could not find closing \']\' for argument to %1', parser.currentCS);
 
 	return unitPieces;
 }

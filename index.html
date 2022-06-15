@@ -16,24 +16,29 @@ MathJax = {
 </script>
 <body>
 
-	$$ \frac{a}{ba} $$
+	$$ 1.25\ \frac{{\color{red}\mathrm{kg}}\,\mathrm{m}^2}{\mathrm{s}^2} $$
 
-	$$ \mtext{testing!} $$
-
-	$$ ^{33}_{44}Ar^{3+} $$
-
-	$$ 1.25\ \mathrm{\frac{kg\ m^2}{s^2}} $$
-
-	$$ \unit[inter-unit-product = \ensuremath{{}\cdot{}}]{\kilo\gram\meter\squared\per\second\squared} $$
+	$$ 1.25\ \frac{\mathrm{kg}\cdot\mathrm{m}^2}{\mathrm{s}^2} $$
 
 	$$ \unit{kg.m^2.s^{-2}} $$
+
+	$$ \unit[inter-unit-product = \cdot]{\kilo\gram\meter\squared\per\second\squared} $$
 
 	$$ \unit{a} $$
 
 	$$ \unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second\squared} $$
+	
+	$$ \unit[per-mode=symbol, per-symbol-script-correction = ]{\kilo\gram\meter\squared\per\second\squared} $$
 
 	$$ \unit[per-mode=fraction]{\kilo\gram\meter\tothe{2}\per\second\tothe{2}} $$
+	
+	$$ \unit[per-mode=fraction]{\highlight{red}\kilo\gram\meter\tothe{2}\per\highlight{orange}\second\tothe{2}} $$
 
+
+	$$ \unit[per-mode=fraction, inter-unit-product = \cdot]{\kilo\gram\raiseto{2}\meter\per\raiseto{2}\second} $$
+
+	$$ \unit[per-mode=fraction, inter-unit-product = \cdot]{\cancel\kilo\gram\squared\per\cancel\kilo\gram\squared\meter\per\raiseto{2}\second} $$
+	
 	$$ \unit[per-mode=symbol]{fff} $$
 
 	$$ \qty{1.25}{\kilo\gram\meter\squared\per\second\squared} $$
