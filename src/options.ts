@@ -1,15 +1,15 @@
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 
-type PerMode = 'power'| 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol';
+type PerMode = 'power'| 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol' | 'perMode';
 type QualifierMode = 'subscript' | 'bracket' | 'combine' | 'phrase';
 
 export interface IUnitOptions {
 	interUnitProduct: string;
 
 	perMode: PerMode;
-	displayPerMode?: PerMode;	// not implemented, global setting
-	inlinePerMode?: PerMode;	// not implemented, global setting
+	displayPerMode: PerMode;	// not implemented, global setting
+	inlinePerMode: PerMode;	// not implemented, global setting
 	perSymbol: string; 
 	fractionCommand: string;
 	bracketUnitDenominator: boolean;
@@ -36,13 +36,15 @@ export interface INumOptions{
 
 export interface IOptions extends IUnitOptions, INumOptions { };
 
-const UnitOptionDefaults: IUnitOptions = {
+export const UnitOptionDefaults: IUnitOptions = {
     bracketUnitDenominator: true,
     forbidLiteralUnits: false,
     fractionCommand: '\\frac',
 	interUnitProduct: '\\,',
 	parseUnits: true,
 	perMode: 'power',
+	displayPerMode: 'perMode',
+	inlinePerMode: 'perMode',
 	perSymbolScriptCorrection: '\\!',
 	perSymbol: '/',
 	powerHalfAsSqrt: false,
@@ -76,14 +78,14 @@ function camelCase(input: string) {
     });
 }
 
-export function processOptions(optionString: string) : IOptions {
-    const options : IOptions = {...UnitOptionDefaults};
+export function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
+    const options : IOptions = defaultOptions;//{...UnitOptionDefaults};
 	if (optionString != null){
 		const optionArray = optionString.split(',');
 		optionArray.forEach((v,i,a)=>{
-			console.log(v);
+			//console.log(v);
 			let args = v.split('=');
-			console.log(args);
+			//console.log(args);
 			let prop = camelCase(args[0].trim());
 			if (args.length > 1){
 				options[prop] = args[1].trim();
@@ -93,6 +95,6 @@ export function processOptions(optionString: string) : IOptions {
 		
 		});
 	}
-	console.log(options);
+	//console.log(options);
     return options;
 }

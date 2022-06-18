@@ -3,7 +3,7 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { findOptions, IOptions, IUnitOptions, processOptions } from './options';
+import { findOptions, IOptions, IUnitOptions, processOptions, UnitOptionDefaults } from './options';
 import { unitParse } from './unitMethods';
 import { prefixSymbol } from './units';
 
@@ -68,13 +68,28 @@ const siunitxMap = new CommandMap('siunitxMap', {
     qty: ['siunitxToken', 'qty']
 }, {
     siunitxToken: (parser, name, type) => {
-        const options = processOptions(findOptions(parser));
+        const options = processOptions(parser.options as IOptions, findOptions(parser));
         //parser.configuration.packageData.set('siunitx', options);
 
+        //hack to get display mode (display or inline)
+        // const testNode = parser.create('node', 'mtext');
+        // const testdisplay = isDisplay(testNode);
+        // console.log(testdisplay);
         const node = methodMap.get(name as string)(parser,name as string,options);
-        
+        // console.log(parser);
         parser.Push(node);
+        // const display = isDisplay(node);
+        // console.log(display);
+        
     }
 });
 
-var siunitxConfiguration = Configuration.create('siunitx', { handler: { macro: ['siunitxMap'] } });
+function isDisplay(node: MmlNode): boolean {
+    //const {displaystyle, scriptlevel} = node.attributes.getList('displaystyle', 'scriptlevel');
+    const {displaystyle} = node.attributes.getList('displaystyle');
+    console.log(displaystyle);
+    return displaystyle == true;
+  }
+
+
+var siunitxConfiguration = Configuration.create('siunitx', { handler: { macro: ['siunitxMap'] }, options: UnitOptionDefaults });
