@@ -90,7 +90,7 @@ function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower: boolea
 	if (unitPiece.highlight){
 		unitLatex += '{\\color{' + unitPiece.highlight + '}';
 	}
-	unitLatex += options.unitFontCommand + '{' + unitPiece.prefix + unitPiece.symbol + '}';
+	unitLatex += options.unitFontCommand + '{\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}}';
 	const power = unitPiece.power != null 
 		? (absPower 
 			? Math.abs(unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1)) 
@@ -257,10 +257,6 @@ export function unitParse(parser: TexParser, text:string, options: IOptions): Mm
 
 	const mml = displayUnits(parser, unitPieces, options);
 	
-	// var mml = parser.create('node', 'mtext');
-	// mml.attributes.set('aria-label', "This is a unit parse result.");  // THIS IS HOW YOU ADD SPEECH.
-	// var rtext = parser.create('text', 'testing unit parsing ');
-	// mml.appendChild(rtext);
 	return mml;
 }
 
