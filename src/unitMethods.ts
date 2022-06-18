@@ -53,36 +53,33 @@ function processUnitMacro(macro:string, parser:TexParser) : IUnitMacroProcessRes
 
 }
 
+const modifierMacroMap = new Map<string, (macro:string, parser:TexParser)=>IUnitMacroProcessResult>([
+	['square', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result: {power: 2}};}], 
+	['cubic', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result: {power: 3}};}],
+	['squared', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "previous", result: {power: 2}};}],
+	['cubed', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "previous", result: {power: 3}};}],
+	['tothe', (macro:string, parser:TexParser):IUnitMacroProcessResult => {
+		const arg = parser.GetArgument('tothe', true);
+		return {type: "previous", result: {power: +arg}};
+	}],
+	['raiseto', (macro:string, parser:TexParser):IUnitMacroProcessResult => {
+		const arg = parser.GetArgument('raiseto');
+		return {type: "next", result: {power: +arg}};
+	}],
+	['per', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result: {position: 'denominator'}};}],
+	['of', (macro:string, parser:TexParser):IUnitMacroProcessResult => {
+		const arg = parser.GetArgument('of');
+		return {type: "previous", result:{qualifier: arg}};
+	}],
+	['cancel', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result:{cancel: true}};}],
+	['highlight', (macro:string, parser:TexParser):IUnitMacroProcessResult => {
+		const arg = parser.GetArgument('highlight');
+		return {type: "next", result:{highlight: arg}};
+	}],
+]);
+
 function processModifierMacro(macro:string, parser:TexParser) : IUnitMacroProcessResult{
-	let arg;
-	switch (macro){
-		case "square":
-			return {type: "next", result: {power: 2}};
-		case "cubic":
-			return {type: "next", result: {power: 3}};
-		case "squared":
-			return {type: "previous", result: {power: 2}};
-		case "cubed":
-			return {type: "previous", result: {power: 3}};
-		case "tothe":
-			arg = parser.GetArgument('tothe', true);
-			return {type: "previous", result: {power: +arg}};  // need to force interpretation as number
-		case "raiseto":
-			arg = parser.GetArgument('raiseto');
-			return {type: "next", result: {power: +arg}};
-		case "per":
-			return {type: "next", result: {position: 'denominator'}}
-		case "of":
-			arg = parser.GetArgument('of');
-			return {type: "previous", result:{qualifier: arg}};
-		case "cancel":
-			return {type: "next", result:{cancel: true}};
-		case "highlight":
-			arg = parser.GetArgument('highlight');
-			return {type: "next", result:{highlight: arg}};
-		default:
-			console.log('DEFAULT REACHED');
-	}
+	return modifierMacroMap.get(macro)(macro, parser);
 }
 
 function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower: boolean = false) : {latex: string, superscriptPresent:boolean }{

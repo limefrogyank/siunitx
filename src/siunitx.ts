@@ -3,7 +3,7 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { findOptions, IUnitOptions, processOptions } from './options';
+import { findOptions, IOptions, IUnitOptions, processOptions } from './options';
 import { unitParse } from './unitMethods';
 import { prefixSymbol } from './units';
 
@@ -37,6 +37,30 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
 // 	UnitMappings,
 // 	UnitMethods);
 
+const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOptions )=>MmlNode>([
+    ['\\num', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
+        const node = parseNumber(parser, parser.GetArgument(name));
+        return node;
+    }],
+    ['\\ang', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
+        const node = parseAngle(parser, parser.GetArgument(name));
+        return node;
+    }],
+    ['\\unit', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
+        const text = parser.GetArgument(name);
+        const node = unitParse(parser, text, options);
+        return node;
+    }],
+    ['\\qty', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
+        const node1 = parseNumber(parser, parser.GetArgument(name));
+        parser.Push(node1);
+        const text = parser.GetArgument(name);
+        const node = unitParse(parser, text, options);
+        return node;
+    }],
+
+])
+
 const siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
     ang: ['siunitxToken', 'ang'],
@@ -47,37 +71,9 @@ const siunitxMap = new CommandMap('siunitxMap', {
         const options = processOptions(findOptions(parser));
         //parser.configuration.packageData.set('siunitx', options);
 
-        switch (name) {
-            case "\\num":
-                {
-                    const node = parseNumber(parser, parser.GetArgument(name));
-                    parser.Push(node);
-                    break;
-                }
-            case "\\ang":
-                {
-                    const node = parseAngle(parser, parser.GetArgument(name));
-                    parser.Push(node);
-                    break;
-                }
-            case "\\unit":
-                {
-                    const text = parser.GetArgument(name);
-                    const node = unitParse(parser, text, options);
-                    parser.Push(node);
-                    break;
-                }
-            case "\\qty":
-                {
-                    const node1 = parseNumber(parser, parser.GetArgument(name));
-                    parser.Push(node1);
-                    const text = parser.GetArgument(name);
-                    const node = unitParse(parser, text, options);
-                    parser.Push(node);
-                    break;
-                }
-        }
-       
+        const node = methodMap.get(name as string)(parser,name as string,options);
+        
+        parser.Push(node);
     }
 });
 
