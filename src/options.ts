@@ -2,7 +2,7 @@ import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 
 type PerMode = 'power'| 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol' | 'perMode';
-type QualifierMode = 'subscript' | 'bracket' | 'combine' | 'phrase';
+export type QualifierMode = 'subscript' | 'bracket' | 'combine' | 'phrase';
 
 export interface IUnitOptions {
 	interUnitProduct: string;

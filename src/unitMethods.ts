@@ -3,7 +3,7 @@ import { StackItem } from "mathjax-full/js/input/tex/StackItem";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { ParseMethod, ParseResult } from "mathjax-full/js/input/tex/Types";
-import { IOptions, IUnitOptions, processOptions } from "./options";
+import { IOptions, IUnitOptions, processOptions, QualifierMode } from "./options";
 import { prefixSymbol, unitSymbol } from "./units";
 
 interface IUnitPiece {
@@ -82,6 +82,13 @@ function processModifierMacro(macro:string, parser:TexParser) : IUnitMacroProces
 	return modifierMacroMap.get(macro)(macro, parser);
 }
 
+const qualiferMethod = new Map<QualifierMode, (qualifer:string, phrase?:string)=>string>([
+	['subscript', (qualifer:string, phrase?:string):string => {return '_{'+ qualifer + '}';}],
+	['bracket', (qualifer:string, phrase?:string):string => {return '('+ qualifer + ')';}],
+	['combine', (qualifer:string, phrase?:string):string => {return qualifer; }],
+	['phrase', (qualifer:string, phrase?:string):string => {return phrase + qualifer;}],
+]);
+
 function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower: boolean = false) : {latex: string, superscriptPresent:boolean }{
 	let unitLatex = '';
 	if (unitPiece.cancel){
@@ -90,7 +97,12 @@ function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower: boolea
 	if (unitPiece.highlight){
 		unitLatex += '{\\color{' + unitPiece.highlight + '}';
 	}
-	unitLatex += options.unitFontCommand + '{\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}}';
+	unitLatex += options.unitFontCommand + '{';
+	unitLatex += '\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}';
+	if (unitPiece.qualifier){
+		unitLatex += qualiferMethod.get(options.qualifierMode)(unitPiece.qualifier, options.qualifierPhrase);
+	}
+	unitLatex += '}';
 	const power = unitPiece.power != null 
 		? (absPower 
 			? Math.abs(unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1)) 

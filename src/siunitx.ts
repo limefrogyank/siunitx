@@ -69,6 +69,7 @@ const siunitxMap = new CommandMap('siunitxMap', {
 }, {
     siunitxToken: (parser, name, type) => {
         const options = processOptions(parser.options as IOptions, findOptions(parser));
+
         //parser.configuration.packageData.set('siunitx', options);
 
         //hack to get display mode (display or inline)
