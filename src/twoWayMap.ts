@@ -17,6 +17,7 @@ export class TwoWayMap<T,U>{
 		
 	}
 
+	
 	public has(key:T) {return this.map.has(key);}
 
 	public get(key:T) { return this.map.get(key); }

@@ -264,12 +264,31 @@ export function unitParse(parser: TexParser, text:string, options: IOptions): Mm
 
 	} else {
 		unitPieces.push(...parsePlainTextUnits(parser, text));
-		console.log(unitPieces);
 	}
 
 	const mml = displayUnits(parser, unitPieces, options);
 	
 	return mml;
+}
+
+function joinValues(values: IterableIterator<string>, joinString: string): string { 
+	return Array<string>.from(values).filter((e,i,a)=> i===a.indexOf(e)).sort((a,b)=> a.length - b.length).join(joinString); 
+}
+
+
+function processPrefixUnitCombo(text:string, unitPiece:IUnitPiece): void{
+	const prefixes = joinValues(prefixSymbol.values(), '|');
+	const units = joinValues(unitSymbol.values(), '|');
+
+	const regex = new RegExp('(' + prefixes + ')?(' + units + ')');
+	const result = regex.exec(text);
+
+	if (result[1] !== undefined){
+		unitPiece.prefix = result[1];
+	} else {
+		unitPiece.prefix = '';
+	}
+	unitPiece.symbol = result[2];
 }
 
 function parsePlainTextUnits(parser:TexParser, text:string): Array<IUnitPiece> {
@@ -283,36 +302,62 @@ function parsePlainTextUnits(parser:TexParser, text:string): Array<IUnitPiece> {
 	let isDenominator: boolean=false;
 	let prefixUnit:string = '';
 	while (subParser.i < subParser.string.length){
-		switch (subParser.string.charAt(subParser.i++)) {
+		switch (subParser.string.charAt(subParser.i)) {
 			case '~':
 			case '.':
 				//process prefix-unit string into unitPiece
+				processPrefixUnitCombo(prefixUnit, unitPiece);
 				unitPieces.push(unitPiece);
-				unitPiece = {position: isDenominator ? 'denominator' : 'numerator'};
 				prefixUnit = ''
+				unitPiece = {position: isDenominator ? 'denominator' : 'numerator'};
 				break;
 			case '/':
 				//process prefix-unit string into unitPiece
+				processPrefixUnitCombo(prefixUnit, unitPiece);
 				unitPieces.push(unitPiece);
-				unitPiece = {position: isDenominator ? 'denominator' : 'numerator'};
 				prefixUnit = ''
 				isDenominator=true;
+				unitPiece = {position: isDenominator ? 'denominator' : 'numerator'};
 				break;
 			case '^':
 				//power
+				let next = subParser.string.charAt(++subParser.i);
+				let power = '';
+				if (next == '{'){
+					while ((next = subParser.string.charAt(++subParser.i)) != '}'){
+						power += next;
+					}
+				} else {
+					power = next;
+				}
+				unitPiece.power = +power;
 				break;
 			case '_':
 				//of
+				next = subParser.string.charAt(++subParser.i);
+				let qualifier = '';
+				if (next == '{'){
+					while ((next = subParser.string.charAt(++subParser.i)) != '}'){
+						qualifier += next;
+					}
+				} else {
+					qualifier = next;
+				}
+				unitPiece.qualifier = qualifier;
 				break;
 			default:
 				//add char to prefix-unit string
 				prefixUnit += subParser.string.charAt(subParser.i);
 				break;
 		}
+		subParser.i++;
 		//return parser.string.slice(j, parser.i -1);
 	}
-	throw new TexError('MissingCloseBracket',
-	'Could not find closing \']\' for argument to %1', parser.currentCS);
+
+	processPrefixUnitCombo(prefixUnit, unitPiece);
+	unitPieces.push(unitPiece);
+	// throw new TexError('MissingCloseBracket',
+	// 'Could not find closing \']\' for argument to %1', parser.currentCS);
 
 	return unitPieces;
 }
