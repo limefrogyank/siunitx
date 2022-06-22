@@ -3,9 +3,10 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { findOptions, IOptions, IUnitOptions, processOptions, UnitOptionDefaults } from './options';
-import { unitParse } from './unitMethods';
-import { prefixSymbol } from './units';
+import { parseNumber } from './numMethods';
+import { findOptions, IOptions, IUnitOptions, NumOptionDefaults, processOptions, UnitOptionDefaults } from './options';
+import { parseUnit } from './unitMethods';
+
 
 /**
  * Allowed attributes on any token element other than the ones with default values
@@ -18,12 +19,6 @@ var ALLOWED = {
     'per-mode': true
 };
 
-function parseNumber(parser:TexParser, text:string) :MmlNode{
-    var node = parser.create('node', 'mtext');
-    var inner = parser.create('text', text + " testNum");
-    node.appendChild(inner);
-    return node;
-}
 
 function parseAngle(parser:TexParser, text:string):MmlNode {
     var node = parser.create('node', 'mtext');
@@ -32,14 +27,9 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
     return node;
 }
 
-
-// const unitMap = new CommandMap('unitMap', 
-// 	UnitMappings,
-// 	UnitMethods);
-
 const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOptions )=>MmlNode>([
     ['\\num', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
-        const node = parseNumber(parser, parser.GetArgument(name));
+        const node = parseNumber(parser, parser.GetArgument(name), options);
         return node;
     }],
     ['\\ang', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
@@ -48,14 +38,14 @@ const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOpti
     }],
     ['\\unit', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
         const text = parser.GetArgument(name);
-        const node = unitParse(parser, text, options);
+        const node = parseUnit(parser, text, options);
         return node;
     }],
     ['\\qty', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
-        const node1 = parseNumber(parser, parser.GetArgument(name));
+        const node1 = parseNumber(parser, parser.GetArgument(name), options);
         parser.Push(node1);
         const text = parser.GetArgument(name);
-        const node = unitParse(parser, text, options);
+        const node = parseUnit(parser, text, options);
         return node;
     }],
 
@@ -93,4 +83,4 @@ function isDisplay(node: MmlNode): boolean {
   }
 
 
-var siunitxConfiguration = Configuration.create('siunitx', { handler: { macro: ['siunitxMap'] }, options: UnitOptionDefaults });
+var siunitxConfiguration = Configuration.create('siunitx', { handler: { macro: ['siunitxMap'] }, options: {...UnitOptionDefaults, ...NumOptionDefaults} });

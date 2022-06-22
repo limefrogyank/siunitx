@@ -3,36 +3,95 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 
 type PerMode = 'power'| 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol' | 'perMode';
 export type QualifierMode = 'subscript' | 'bracket' | 'combine' | 'phrase';
+type ExponentMode = 'input' | 'fixed' | 'engineering' | 'scientific';
+type RoundMode = 'none' | 'figures' | 'places' | 'uncertainty';
+type GroupDigits = 'all' | 'none' | 'decimal' | 'integer';
+type UncertaintyMode = 'separate'|'compact'|'full'|'compact-marker';
+type UncertaintyDescriptorMode = 'bracket'|'bracket-separator'|'separator'|'subscript';
 
 export interface IUnitOptions {
 	interUnitProduct: string;
-
 	perMode: PerMode;
 	displayPerMode: PerMode;	// not implemented, global setting
-	inlinePerMode: PerMode;	// not implemented, global setting
+	inlinePerMode: PerMode;		// not implemented, global setting
 	perSymbol: string; 
 	fractionCommand: string;
 	bracketUnitDenominator: boolean;
-
 	perSymbolScriptCorrection: string;
-
 	stickyPer: boolean;
-
 	qualifierMode: QualifierMode;
 	qualifierPhrase: string;
-
 	powerHalfAsSqrt: boolean;
-
 	parseUnits: boolean;
-
 	forbidLiteralUnits: boolean;
-
 	unitFontCommand: string;
 }
 
-export interface INumOptions{
-
+export interface INumParseOptions{
+	evaluateExpression: boolean;
+	expression: string;
+	inputCloseUncertainty: string;
+	inputComparators: string;
+	inputDecimalMarkers: string;
+	inputDigits:string;
+	inputExponentMarkers:string;
+	inputIgnore:string;
+	inputOpenUncertainty: string;
+	inputSigns:string;
+	inputUncertaintySigns:string;
+	parseNumbers:boolean;
+	retainExplicitDecimalMarker:boolean;
+	retainExplicitPlus:boolean;
+	retainNegativeZero:boolean;
+	retainZeroUncertainty:boolean;
 } 
+
+export interface INumPostOptions{
+	dropExponent:boolean;
+	dropUncertainty:boolean;
+	dropZeroDecimal:boolean;
+	exponentMode:ExponentMode;
+	fixedExponent:number;
+	minimumIntegerDigits:number;
+	minimumDecimalDigits:number;
+	roundHalf: 'up' | 'even';
+	roundMinimum: number;
+	roundMode: RoundMode;
+	roundPad: boolean;
+	roundPrecision: number;
+	roundZeroPositive: boolean;
+} 
+
+export interface INumOutputOptions {
+	bracketNegativeNumbers: boolean;
+	digitGroupSize: number;
+	digitGroupFirstSize: number;
+	digitGroupOtherSize: number;
+	exponentBase: string;
+	exponentProduct: string;
+	groupDigits: GroupDigits;
+	groupMinimumDigits: number;
+	groupSeparator: string;
+	negativeColor: string;
+	outputCloseUncertainty: string;
+	outputDecimalMarker: string;
+	outputExponentMarker: string;
+	outputOpenUncertainty: string;
+	printImplicitPlus: boolean;
+	printUnityMantissa:boolean;
+	printZeroExponent:boolean;
+	printZeroInteger:boolean;
+	tightSpacing:boolean;
+	uncertaintyDescriptorMode:UncertaintyDescriptorMode;
+	uncertaintyDescriptorSeparator:string;
+	uncertaintyDescriptors:string;
+	uncertaintyMode: UncertaintyMode;
+	uncertaintySeparator: string;
+	zeroDecimalAsSymbol: boolean;
+	zeroSymbol:string;
+}
+
+export interface INumOptions extends INumParseOptions, INumPostOptions, INumOutputOptions { };
 
 export interface IOptions extends IUnitOptions, INumOptions { };
 
@@ -53,6 +112,72 @@ export const UnitOptionDefaults: IUnitOptions = {
 	stickyPer: false,
 	unitFontCommand: '\\mathrm'
 }
+
+export const NumParseOptionDefaults: INumParseOptions = {
+    evaluateExpression: false,
+	expression: '#1',
+	inputCloseUncertainty: ')',
+	inputComparators: '<=>\\approx\\ge\\geq\\gg\\le\\leq\\ll\\sim',
+	inputDecimalMarkers: '.,',
+	inputDigits: '0123456789',
+	inputExponentMarkers: 'dDeE',
+	inputIgnore:'',
+	inputOpenUncertainty:'(',
+	inputSigns:'+-\\pm\\mp',
+	inputUncertaintySigns: '\\pm',
+	parseNumbers: true,
+	retainExplicitDecimalMarker: false,
+	retainExplicitPlus: false,
+	retainNegativeZero: false,
+	retainZeroUncertainty: false
+};
+
+export const NumPostOptionDefaults: INumPostOptions = {
+	dropExponent: false,
+	dropUncertainty:false,
+	dropZeroDecimal:false,
+	exponentMode: 'input',
+	fixedExponent: 0,
+	minimumIntegerDigits: 0,
+	minimumDecimalDigits: 0,
+	roundHalf: 'up',
+	roundMinimum: 0,
+	roundMode:'none',
+	roundPad: true,
+	roundPrecision: 2,
+	roundZeroPositive: true
+};
+
+export const NumOutputOptionDefaults: INumOutputOptions = {
+	bracketNegativeNumbers: false,
+	digitGroupSize: 3,
+	digitGroupFirstSize:3,
+	digitGroupOtherSize:3,
+	exponentBase: '10',
+	exponentProduct: '\\times',
+	groupDigits: 'all',
+	groupMinimumDigits: 5,
+	groupSeparator: '\\,',
+	negativeColor: '',
+	outputCloseUncertainty:')',
+	outputDecimalMarker: '.',
+	outputExponentMarker: '',
+	outputOpenUncertainty: '(',
+	printImplicitPlus: false,
+	printUnityMantissa: true,
+	printZeroExponent: false,
+	printZeroInteger: true,
+	tightSpacing: false,
+	uncertaintyDescriptorMode: 'bracket-separator',
+	uncertaintyDescriptorSeparator: '\\',
+	uncertaintyDescriptors: '',
+	uncertaintyMode: 'compact',
+	uncertaintySeparator: '',
+	zeroDecimalAsSymbol: false,
+	zeroSymbol: '\\mbox{---}'
+}
+
+export const NumOptionDefaults: INumOptions = {...NumParseOptionDefaults, ...NumPostOptionDefaults, ...NumOutputOptionDefaults};
 
 // Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
 // This method just gets the bracketed option string only.

@@ -216,7 +216,7 @@ function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: I
 	return mml;
 }
 
-export function unitParse(parser: TexParser, text:string, options: IOptions): MmlNode {
+export function parseUnit(parser: TexParser, text:string, options: IUnitOptions): MmlNode {
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
 
