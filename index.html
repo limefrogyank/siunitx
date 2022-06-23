@@ -17,44 +17,72 @@ MathJax = {
   src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
 </script>
 <body>
+	$$ 1.23 $$
+	$$ 1,23 $$
+	$$ 1{,}23 $$
+<table id="numTable"></table>
+<table id="unitTable"></table>
+<script>
+	var num = [
+		String.raw`\num{1234}`,
+		String.raw`\num{12345}`,
+		String.raw`\num{0.123}`,
+		String.raw`\num{0,1234}`,
+		String.raw`\num{.12345}`,
+		String.raw`\num{3.45d-4}`,
+		String.raw`\num{-e10}`,
+		String.raw`\num[group-minimum-digits = 5]{1234.5678}`,
+		String.raw`\num[group-minimum-digits = 5]{12345.67890}`,
+		String.raw`\num[digit-group-other-size = 2]{1234567890}`,
+		String.raw`\num[output-decimal-marker = {,}]{1.23}`,
+		String.raw`\num[exponent-product = \times]{1e2}`,
+		String.raw`\num[exponent-product = \cdot]{1e2}`,
+		String.raw`\num[exponent-base = 2]{1e2}`
+];
+	var table = document.getElementById('numTable');
+	for (var i = 0; i<num.length; i++){
+		var tr = document.createElement('tr');
+		table.appendChild(tr);
+		var td = document.createElement('td');
+		td.innerText = num[i];
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.innerText = "$$ " + num[i] + " $$";
+		tr.appendChild(td);
+	}
 
-	$$ \mathrm{\class{MathML-Unit}{kg}^2} $$
+	var unit = [
+		String.raw`\unit[per-mode=power]{\kilo\gram\per\second}`,
+		String.raw`\unit[per-mode=power]{\kilo\gram\of{Fe}\per\second}`,
+		String.raw`\unit{kg.m^2.s^{-2}}`,
+		String.raw`\unit{kg_{Fe}.m^2.s^{-2}}`,
+		String.raw`\unit[inter-unit-product = \cdot]{\kilo\gram\meter\squared\per\second\squared}`,
+		String.raw`\unit{g}`,
+		String.raw`\unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second\squared}`,
+		String.raw`\unit[per-mode=symbol, per-symbol-script-correction = ]{\kilo\gram\meter\squared\per\second\squared}`,
+		String.raw`\unit[per-mode=fraction]{\kilo\gram\meter\tothe{2}\per\second\tothe{2}}`,
+		String.raw`\unit[per-mode=fraction]{\highlight{red}\kilo\gram\meter\tothe{2}\per\highlight{orange}\second\tothe{2}}`,
+		String.raw`\unit[per-mode=fraction, inter-unit-product = \cdot]{\kilo\gram\raiseto{2}\meter\per\raiseto{2}\second}`,
+		String.raw`\unit[per-mode=fraction, inter-unit-product = \cdot]{\cancel\kilo\gram\squared\per\cancel\kilo\gram\squared\meter\per\raiseto{2}\second}`,
+		String.raw`\unit[per-mode=symbol]{fff}`,
 
-	\( \mathrm{\class{MathML-Unit}{kg}^2} \)
+	]
 
-	$$ \unit[per-mode=power]{\kilo\gram\per\second} $$
+	var table = document.getElementById('unitTable');
+	for (var i = 0; i<unit.length; i++){
+		var tr = document.createElement('tr');
+		table.appendChild(tr);
+		var td = document.createElement('td');
+		td.innerText = unit[i];
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.innerText = "$$ " + unit[i] + " $$";
+		tr.appendChild(td);
+	}
+</script>
 
-	$$ \unit[per-mode=power]{\kilo\gram\of{Fe}\per\second} $$
 
-	\( \unit[per-mode=power]{\kilo\gram\per\second} \)
-
-	$$ 1.25\ \frac{{\color{red}\mathrm{kg}}\,\mathrm{m}^2}{\mathrm{s}^2} $$
-
-	$$ 1.25\ \frac{\mathrm{\class{MathML-Unit}{kg}}\cdot\mathrm{\class{MathML-Unit}{m}}^2}{\mathrm{\class{MathML-Unit}{s}}^2} $$
-
-	$$ \unit{kg.m^2.s^{-2}} $$
-
-	$$ \unit{kg_{Fe}.m^2.s^{-2}} $$
-
-	$$ \unit[inter-unit-product = \cdot]{\kilo\gram\meter\squared\per\second\squared} $$
-
-	$$ \unit{g} $$
-
-	$$ \unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second\squared} $$
 	
-	$$ \unit[per-mode=symbol, per-symbol-script-correction = ]{\kilo\gram\meter\squared\per\second\squared} $$
-
-	$$ \unit[per-mode=fraction]{\kilo\gram\meter\tothe{2}\per\second\tothe{2}} $$
-	
-	$$ \unit[per-mode=fraction]{\highlight{red}\kilo\gram\meter\tothe{2}\per\highlight{orange}\second\tothe{2}} $$
-
-
-	$$ \unit[per-mode=fraction, inter-unit-product = \cdot]{\kilo\gram\raiseto{2}\meter\per\raiseto{2}\second} $$
-
-	$$ \unit[per-mode=fraction, inter-unit-product = \cdot]{\cancel\kilo\gram\squared\per\cancel\kilo\gram\squared\meter\per\raiseto{2}\second} $$
-	
-	$$ \unit[per-mode=symbol]{fff} $$
-
 	$$ \qty{1.25}{\kilo\gram\meter\squared\per\second\squared} $$
 </body>
 

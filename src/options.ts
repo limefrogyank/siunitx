@@ -151,8 +151,8 @@ export const NumPostOptionDefaults: INumPostOptions = {
 export const NumOutputOptionDefaults: INumOutputOptions = {
 	bracketNegativeNumbers: false,
 	digitGroupSize: 3,
-	digitGroupFirstSize:3,
-	digitGroupOtherSize:3,
+	digitGroupFirstSize:-1,  	// These should be -1 so we can detect when they've been explicitly set.
+	digitGroupOtherSize:-1,		// Otherwise, digitGroupSize will override them.
 	exponentBase: '10',
 	exponentProduct: '\\times',
 	groupDigits: 'all',
@@ -204,16 +204,20 @@ function camelCase(input: string) {
 }
 
 export function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
-    const options : IOptions = defaultOptions;//{...UnitOptionDefaults};
+    const options : IOptions = {...defaultOptions};//{...UnitOptionDefaults};
 	if (optionString != null){
-		const optionArray = optionString.split(',');
-		optionArray.forEach((v,i,a)=>{
-			//console.log(v);
+		const optionArray = optionString.split(/,(?!\})/); // needed so that 'output-decimal-marker = {,}' parses with comma as value
+		optionArray.forEach((v,i,a)=> {
+			console.log(v);
 			let args = v.split('=');
-			//console.log(args);
+			console.log(args);
 			let prop = camelCase(args[0].trim());
 			if (args.length > 1){
-				options[prop] = args[1].trim();
+				if ( typeof options[prop] === 'number' ){
+					options[prop] = +(args[1].trim());
+				} else {
+					options[prop] = args[1].trim();
+				}
 			} else {
 				options[prop] = true;
 			}
