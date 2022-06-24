@@ -1,11 +1,12 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { displayNumber } from "./numDisplayMethods";
+import { displayOutput } from "./numDisplayMethods";
 import { INumOptions, INumOutputOptions, INumParseOptions, INumPostOptions } from "./options";
 
 
 
 export interface INumberPiece {
+	prefix: string;
 	sign: string;
 	whole: string;
 	decimal: string;
@@ -13,11 +14,12 @@ export interface INumberPiece {
 	exponentMarker: string;
 	exponentSign: string;
 	exponent: string;
-	type: 'number'|'uncertainty'|'comparator';
-	other: string;
+	//type: 'number'|'uncertainty'|'comparator';
+	uncertainty: string[];
 }
 
 const NumberPieceDefault : INumberPiece = {
+	prefix: '',
 	sign: '',
 	whole: '',
 	decimal: '',
@@ -25,8 +27,8 @@ const NumberPieceDefault : INumberPiece = {
 	exponentMarker: '',
 	exponentSign: '',
 	exponent: '',
-	type: 'number',
-	other: ''
+	//type: 'number',
+	uncertainty: new Array<string>()
 }
 
 
@@ -36,10 +38,10 @@ const NumberPieceDefault : INumberPiece = {
 
 function parseDigits(text:string, numArray: Array<INumberPiece>){
 	let num = numArray[numArray.length - 1];
-	if (num.type != 'number'){
-		num = {...NumberPieceDefault};
-		numArray.push(num);
-	}
+	// if (num.type != 'number'){
+	// 	num = {...NumberPieceDefault};
+	// 	numArray.push(num);
+	// }
 	if (num.exponentMarker != '') {
 		num.exponent += text;
 	} else if (num.decimal != '') {
@@ -207,7 +209,7 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 
 		postProcessNumber(numPieces,options);
 
-		const displayResult = displayNumber(numPieces, options);
+		const displayResult = displayOutput(numPieces, options);
 
 		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
     	return mml;

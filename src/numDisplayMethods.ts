@@ -49,22 +49,73 @@ const groupNumbersMap = new Map<string,(numPieces:Array<INumberPiece>, options:I
 ]);
 
 
-
-
-export function displayNumber(pieces:Array<INumberPiece>, options: INumOutputOptions):string{
-
-	groupNumbersMap.get(options.groupDigits)(pieces, options);
-
-	const piece = pieces.find((v)=> v.type == 'number');
-	
+function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string {
 	let output = piece.sign;
 	output += piece.whole;
 	output += (piece.decimal != '' ? options.outputDecimalMarker : '');
 	output += piece.fractional;
 	if (piece.exponentMarker != ''){
-		output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
-		output += options.exponentBase;
-		output += '^{' + piece.exponentSign + piece.exponent + '}';
+		if (options.outputExponentMarker != ''){
+			output += options.outputExponentMarker;
+			output += piece.exponentSign + piece.exponent;
+		} else {
+			output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+			output += options.exponentBase;
+			output += '^{' + piece.exponentSign + piece.exponent + '}';
+		}
 	}
+	return output;
+}
+
+const uncertaintyModeMapping = new Map<string, (piece:INumberPiece, options: INumOutputOptions)=>string>([
+	['separate', (piece:INumberPiece, options: INumOutputOptions):string => {
+		let output = '\\pm';
+		return output;
+	}],
+	['compact', (piece:INumberPiece, options: INumOutputOptions):string => {
+		let output = ''
+	}],
+	['full', (piece:INumberPiece, options: INumOutputOptions):string => {
+		
+	}],
+	['compact-marker', (piece:INumberPiece, options: INumOutputOptions):string => {
+		
+	}],
+])
+
+function displayUncertainty(piece:INumberPiece, options: INumOutputOptions) : string {
+	let output = piece.sign;
+	output += piece.whole;
+	output += (piece.decimal != '' ? options.outputDecimalMarker : '');
+	output += piece.fractional;
+	if (piece.exponentMarker != ''){
+		if (options.outputExponentMarker != ''){
+			output += options.outputExponentMarker;
+			output += piece.exponentSign + piece.exponent;
+		} else {
+			output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+			output += options.exponentBase;
+			output += '^{' + piece.exponentSign + piece.exponent + '}';
+		}
+	}
+	return output;
+}
+
+const displayMapping = new Map<string, (piece:INumberPiece, options: INumOutputOptions)=>string>([
+	['number', displayNumber],
+	['uncertainty', displayUncertainty],
+	['comparator', displayNumber]
+])
+
+export function displayOutput(pieces:Array<INumberPiece>, options: INumOutputOptions):string{
+
+	groupNumbersMap.get(options.groupDigits)(pieces, options);
+
+	//const piece = pieces.find((v)=> v.type == 'number');
+	let output = '';
+	pieces.forEach(v=>{
+		output += displayMapping.get(v.type)(v,options);
+	});	
+	
 	return output;
 }
