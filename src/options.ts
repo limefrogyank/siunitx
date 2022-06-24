@@ -123,8 +123,8 @@ export const NumParseOptionDefaults: INumParseOptions = {
 	inputExponentMarkers: 'dDeE',
 	inputIgnore:'',
 	inputOpenUncertainty:'(',
-	inputSigns:'+-\\pm\\mp',
-	inputUncertaintySigns: '\\pm',
+	inputSigns:'+-', //\\pm\\mp',  // how do I disambiguate a regular sign from an uncertainty sign?
+	inputUncertaintySigns: '\\pm\\mp',
 	parseNumbers: true,
 	retainExplicitDecimalMarker: false,
 	retainExplicitPlus: false,

@@ -17,11 +17,20 @@ MathJax = {
   src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
 </script>
 <body>
+	<style>
+		.tableStyle {
+			border: 1px solid;
+			border-collapse: collapse;
+		}
+		.tableStyle th,td {
+			border: 1px solid;
+		}
+	</style>
 	$$ 1.23 $$
 	$$ 1,23 $$
 	$$ 1{,}23 $$
-<table id="numTable"></table>
-<table id="unitTable"></table>
+<table id="numTable" class="tableStyle"></table>
+<table id="unitTable" class="tableStyle"></table>
 <script>
 	var num = [
 		String.raw`\num{1234}`,
@@ -31,6 +40,13 @@ MathJax = {
 		String.raw`\num{.12345}`,
 		String.raw`\num{3.45d-4}`,
 		String.raw`\num{-e10}`,
+		String.raw`\num{9.99(9)}`,
+		String.raw`\num{9.99 +- 0.09}`,
+		String.raw`\num{9.99 \pm 0.09}`,
+		String.raw`\num{123 +- 4.5}`,
+		String.raw`\num{12.3 +- 6}`,
+		String.raw`\num{123.4(12)}`,
+		String.raw`\num{123.4(1.2)}`,
 		String.raw`\num[group-minimum-digits = 5]{1234.5678}`,
 		String.raw`\num[group-minimum-digits = 5]{12345.67890}`,
 		String.raw`\num[digit-group-other-size = 2]{1234567890}`,
@@ -44,6 +60,7 @@ MathJax = {
 		String.raw`\num{0.035(14)}`,
 		String.raw`\num[uncertainty-mode = compact-marker]{123.45(120)}`,
 		String.raw`\num[uncertainty-mode = compact-marker]{0.035(14)}`,
+		String.raw`\num[uncertainty-mode=separate]{1.234 +- 0.005}`,
 		String.raw`\num[uncertainty-mode=separate,output-open-uncertainty=<,output-close-uncertainty=>,uncertainty-separator=\,]{1.234(5)}`
 ];
 	var table = document.getElementById('numTable');

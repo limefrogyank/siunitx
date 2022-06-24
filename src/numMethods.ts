@@ -15,8 +15,11 @@ export interface INumberPiece {
 	exponentMarker: string;
 	exponentSign: string;
 	exponent: string;
-	//type: 'number'|'uncertainty'|'comparator';
-	uncertainty: Array<INumberPiece>;
+	uncertainty: Array<IUncertainty>;
+}
+
+export interface IUncertainty extends INumberPiece  {
+	type: 'bracket' | 'pm'
 	completed: boolean; // mostly for uncertainty
 }
 
@@ -29,20 +32,20 @@ const NumberPieceDefault : INumberPiece = {
 	exponentMarker: '',
 	exponentSign: '',
 	exponent: '',
-	//type: 'number',
-	uncertainty: null,
-	completed:false
-}
+	uncertainty: null
+};
+
+const UncertaintyDefault: IUncertainty  = {
+	...NumberPieceDefault,
+	type: 'pm',
+	completed: false
+};
 
 function generateNumberPiece():INumberPiece{
 	const piece = {...NumberPieceDefault};
-	piece.uncertainty = new Array<INumberPiece>();
+	piece.uncertainty = new Array<IUncertainty>();
 	return piece;
 }
-
-// function parseMacro(text:string, numArray: Array<INumber>){
-	
-// }
 
 function parseDigits(text:string, numPiece: INumberPiece){
 	let num: INumberPiece;
@@ -107,7 +110,7 @@ function parseSigns(text:string, numPiece: INumberPiece){
 }
 
 function parseOpenUncertainty(text:string, numPiece: INumberPiece){
-	let uncertainty = {...NumberPieceDefault};
+	let uncertainty : IUncertainty = {...UncertaintyDefault, type: 'bracket'};
 	numPiece.uncertainty.push(uncertainty);
 }
 
@@ -120,6 +123,11 @@ function parseCloseUncertainty(text:string, numPiece: INumberPiece){
 		throw new TexError('51', 'Uncertainty was already closed.');
 	}
 	uncertainty.completed = true;
+}
+
+function parseUncertaintySigns(text:string, numPiece: INumberPiece){
+	let uncertainty:IUncertainty = {...UncertaintyDefault, type: 'pm'};
+	numPiece.uncertainty.push(uncertainty);
 }
 
 function parseIgnore(text:string, numPiece: INumberPiece){
@@ -154,6 +162,9 @@ function generateMapping(options: INumParseOptions): Map<string,(text:string, nu
 	}
 	while ((tempArray = matchMacrosOrChar.exec(options.inputCloseUncertainty)) !== null) {
 		parseMap.set(tempArray[0], parseCloseUncertainty);
+	}
+	while ((tempArray = matchMacrosOrChar.exec(options.inputUncertaintySigns)) !== null) {
+		parseMap.set(tempArray[0], parseUncertaintySigns);
 	}
 
 	return parseMap;
@@ -212,6 +223,7 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 		text = text.replace('<=','\\le');
 		text = text.replace('>=','\\ge');
 		text = text.replace('+-','\\pm');
+		console.log(text);
 
 		const num : INumberPiece = generateNumberPiece();
 
@@ -228,12 +240,16 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 				}
 			} else {
 				let macro = char;
+				char = '';
 				while (subParser.i < subParser.string.length && char != '\\' && char != ' '){
 					char = subParser.string.charAt(subParser.i);
 					if (char != '\\' && char != ' '){
 						macro += char;
 					}
+					console.log(macro);
+					subParser.i++;
 				}
+				console.log('tryeing to find:  ' + macro);
 				if (mapping.has(macro)){
 					mapping.get(macro)(char, num);
 				}

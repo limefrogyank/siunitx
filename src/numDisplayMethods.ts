@@ -1,4 +1,4 @@
-import { INumberPiece } from "./numMethods";
+import { INumberPiece, IUncertainty } from "./numMethods";
 import { INumOutputOptions } from "./options";
 
 function addSpacing(text:string, digitGroupSize:number, minimum: number, spacer:string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number ){
@@ -45,41 +45,43 @@ const groupNumbersMap = new Map<string,(num:INumberPiece, options:INumOutputOpti
 ]);
 
 
-function displayUncertainty(piece:INumberPiece, options: INumOutputOptions) : string {
-	let output = piece.sign;
-	output += piece.whole;
-	output += (piece.decimal != '' ? options.outputDecimalMarker : '');
-	output += piece.fractional;
-	if (piece.exponentMarker != ''){
-		if (options.outputExponentMarker != ''){
-			output += options.outputExponentMarker;
-			output += piece.exponentSign + piece.exponent;
-		} else {
-			output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
-			output += options.exponentBase;
-			output += '^{' + piece.exponentSign + piece.exponent + '}';
-		}
+function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece:INumberPiece, options: INumOutputOptions) : string {
+	if (uncertainty.type == 'pm') {
+		return displayNumber(uncertainty, options);
+	} else {
+		return 'haha';
 	}
-	return output;
 }
 
+function convertUncertaintyToBracket(uncertainty: IUncertainty, piece:INumberPiece, options: INumOutputOptions) : string {
+	if (uncertainty.type == 'bracket') {
+		return 'poop';
+	} else {
+		return 'pee';
+	}
+}
 
-const uncertaintyModeMapping = new Map<string, (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions)=>string>([
-	['separate', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
+const uncertaintyModeMapping = new Map<string, ( uncertainty:IUncertainty, value: INumberPiece, options: INumOutputOptions)=>string>([
+	['separate', (uncertainty: IUncertainty, value:INumberPiece, options: INumOutputOptions):string => {
 		let output = '\\pm';
+		output += convertUncertaintyToPlusMinus(uncertainty, value, options);
 		return output;
 	}],
-	['compact', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
+	['compact', (uncertainty:IUncertainty,value: INumberPiece,  options: INumOutputOptions):string => {
 		let output = options.outputOpenUncertainty;
+		output += convertUncertaintyToBracket(uncertainty, value, options);
 		output += options.outputCloseUncertainty;
 		return output;
 	}],
-	['full', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
-		let output = '';
+	['full', (uncertainty:IUncertainty,value: INumberPiece, options: INumOutputOptions):string => {
+		let output = options.outputOpenUncertainty;
+		output += convertUncertaintyToBracket(uncertainty, value, options);
+		output += options.outputCloseUncertainty;
 		return output;
 	}],
-	['compact-marker', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
+	['compact-marker', (uncertainty:IUncertainty,value: INumberPiece,  options: INumOutputOptions):string => {
 		let output = options.outputOpenUncertainty;
+		output += convertUncertaintyToBracket(uncertainty, value, options);
 		output += options.outputCloseUncertainty;
 		return output;
 	}],
@@ -101,11 +103,6 @@ function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string 
 			output += '^{' + piece.exponentSign + piece.exponent + '}';
 		}
 	}
-
-	piece.uncertainty.forEach(v=>{
-		output += uncertaintyModeMapping.get(options.uncertaintyMode)(piece,v,options);
-	});
-
 	return output;
 }
 
@@ -118,6 +115,9 @@ export function displayOutput(num:INumberPiece, options: INumOutputOptions):stri
 	
 	output += displayNumber(num, options);
 		
+	num.uncertainty.forEach(v=>{
+		output += uncertaintyModeMapping.get(options.uncertaintyMode)(v,num,options);
+	});
 	
 	return output;
 }
