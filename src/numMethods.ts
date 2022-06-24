@@ -1,4 +1,5 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
+import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { displayOutput } from "./numDisplayMethods";
 import { INumOptions, INumOutputOptions, INumParseOptions, INumPostOptions } from "./options";
@@ -15,7 +16,8 @@ export interface INumberPiece {
 	exponentSign: string;
 	exponent: string;
 	//type: 'number'|'uncertainty'|'comparator';
-	uncertainty: string[];
+	uncertainty: Array<INumberPiece>;
+	completed: boolean; // mostly for uncertainty
 }
 
 const NumberPieceDefault : INumberPiece = {
@@ -28,20 +30,27 @@ const NumberPieceDefault : INumberPiece = {
 	exponentSign: '',
 	exponent: '',
 	//type: 'number',
-	uncertainty: new Array<string>()
+	uncertainty: null,
+	completed:false
 }
 
+function generateNumberPiece():INumberPiece{
+	const piece = {...NumberPieceDefault};
+	piece.uncertainty = new Array<INumberPiece>();
+	return piece;
+}
 
 // function parseMacro(text:string, numArray: Array<INumber>){
 	
 // }
 
-function parseDigits(text:string, numArray: Array<INumberPiece>){
-	let num = numArray[numArray.length - 1];
-	// if (num.type != 'number'){
-	// 	num = {...NumberPieceDefault};
-	// 	numArray.push(num);
-	// }
+function parseDigits(text:string, numPiece: INumberPiece){
+	let num: INumberPiece;
+	if (numPiece.uncertainty.length > 0){
+		num = numPiece.uncertainty[numPiece.uncertainty.length-1];
+	} else {
+		num = numPiece;
+	}
 	if (num.exponentMarker != '') {
 		num.exponent += text;
 	} else if (num.decimal != '') {
@@ -51,39 +60,44 @@ function parseDigits(text:string, numArray: Array<INumberPiece>){
 	}
 }
 
-function parseDecimals(text: string, numArray: Array<INumberPiece>){
-	let num = numArray[numArray.length - 1];
-	if (num.type != 'number'){
-		num = {...NumberPieceDefault};
-		numArray.push(num);
+function parseDecimals(text: string, numPiece: INumberPiece){
+	let num: INumberPiece;
+	if (numPiece.uncertainty.length > 0){
+		num = numPiece.uncertainty[numPiece.uncertainty.length-1];
+	} else {
+		num = numPiece;
 	}
 	num.decimal += text;
 }
 
-function parseComparators(text:string, numArray: Array<INumberPiece>){
-	let num = numArray[numArray.length - 1];
-	if (num.type != 'comparator'){
-		num = {...NumberPieceDefault, type: 'comparator'};
-		numArray.push(num);
+function parseComparators(text:string, numPiece: INumberPiece){
+	let num: INumberPiece;
+	if (numPiece.uncertainty.length > 0){
+		num = numPiece.uncertainty[numPiece.uncertainty.length-1];
+	} else {
+		num = numPiece;
 	}
-	num.other += text;
+
+	num.prefix += text;
 
 }
 
-function parseExponentMarkers(text:string, numArray: Array<INumberPiece>){
-	let num = numArray[numArray.length - 1];
-	if (num.type != 'number'){
-		num = {...NumberPieceDefault};
-		numArray.push(num);
+function parseExponentMarkers(text:string, numPiece: INumberPiece){
+	let num: INumberPiece;
+	if (numPiece.uncertainty.length > 0){
+		num = numPiece.uncertainty[numPiece.uncertainty.length-1];
+	} else {
+		num = numPiece;
 	}
 	num.exponentMarker += text;
 }
 
-function parseSigns(text:string, numArray: Array<INumberPiece>){
-	let num = numArray[numArray.length - 1];
-	if (num.type != 'number'){
-		num = {...NumberPieceDefault};
-		numArray.push(num);
+function parseSigns(text:string, numPiece: INumberPiece){
+	let num: INumberPiece;
+	if (numPiece.uncertainty.length > 0){
+		num = numPiece.uncertainty[numPiece.uncertainty.length-1];
+	} else {
+		num = numPiece;
 	}
 	if (num.exponentMarker != '') {
 		num.exponentSign += text;
@@ -92,12 +106,28 @@ function parseSigns(text:string, numArray: Array<INumberPiece>){
 	}
 }
 
-function parseIgnore(text:string, numArray: Array<INumberPiece>){
+function parseOpenUncertainty(text:string, numPiece: INumberPiece){
+	let uncertainty = {...NumberPieceDefault};
+	numPiece.uncertainty.push(uncertainty);
+}
+
+function parseCloseUncertainty(text:string, numPiece: INumberPiece){
+	if (numPiece.uncertainty.length == 0){
+		throw new TexError('50', 'No uncertainty parsed to close.');
+	}
+	let uncertainty = numPiece.uncertainty[numPiece.uncertainty.length -1];
+	if (uncertainty.completed){
+		throw new TexError('51', 'Uncertainty was already closed.');
+	}
+	uncertainty.completed = true;
+}
+
+function parseIgnore(text:string, numPiece: INumberPiece){
 	// do nothing
 }
 
-function generateMapping(options: INumParseOptions): Map<string,(text:string, numArray:Array<INumberPiece>)=>void>{
-	const parseMap = new Map<string,(text:string, numArray:Array<INumberPiece>)=>void>();
+function generateMapping(options: INumParseOptions): Map<string,(text:string, numPiece: INumberPiece)=>void>{
+	const parseMap = new Map<string,(text:string, numPiece: INumberPiece)=>void>();
 	//parseMap.set('\\', parseMacro);
 	let tempArray;
 	var matchMacrosOrChar = /[^\\\s]|(?:\\[^\\]*(?=\s|\\|$))/g;
@@ -119,46 +149,52 @@ function generateMapping(options: INumParseOptions): Map<string,(text:string, nu
 	while ((tempArray = matchMacrosOrChar.exec(options.inputIgnore)) !== null) {
 		parseMap.set(tempArray[0], parseIgnore);
 	}
+	while ((tempArray = matchMacrosOrChar.exec(options.inputOpenUncertainty)) !== null) {
+		parseMap.set(tempArray[0], parseOpenUncertainty);
+	}
+	while ((tempArray = matchMacrosOrChar.exec(options.inputCloseUncertainty)) !== null) {
+		parseMap.set(tempArray[0], parseCloseUncertainty);
+	}
 
 	return parseMap;
 }
 
 
 
-const exponentModeMap = new Map<string, (pieces:Array<INumberPiece>, options: INumPostOptions)=>void>([
-	['input', (pieces:Array<INumberPiece>, options: INumPostOptions):void => { }],
-	['fixed', (pieces:Array<INumberPiece>, options: INumPostOptions):void => {
+const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
+	['input', (num:INumberPiece, options: INumPostOptions):void => { }],
+	['fixed', (num:INumberPiece, options: INumPostOptions):void => {
 		const fixed = options.fixedExponent;
-		const piece = pieces.find((v)=> v.type == 'number');
-		if (piece == null) return;
-		const diff = fixed - +(piece.exponentSign + piece.exponent);
+		//const piece = pieces.find((v)=> v.type == 'number');
+		if (num == null) return;
+		const diff = fixed - +(num.exponentSign + num.exponent);
 		const dir = Math.sign(diff);  // +: move numbers from frac to whole, -: move the other way
 		for (let i=0; i< Math.abs(diff); i++){
 			if (dir > 0){
-				if (piece.fractional.length > 0){
-					piece.whole = piece.whole + piece.fractional.slice(0,1);
-					piece.fractional = piece.fractional.slice(0, piece.fractional.length - 1);
+				if (num.fractional.length > 0){
+					num.whole = num.whole + num.fractional.slice(0,1);
+					num.fractional = num.fractional.slice(0, num.fractional.length - 1);
 				} else {
-					piece.whole = piece.whole + '0';
+					num.whole = num.whole + '0';
 				}
 			} else {
-				if (piece.whole.length > 0){
-					piece.fractional = piece.whole.slice(piece.whole.length-1,piece.whole.length) + piece.fractional;
-					piece.whole = piece.whole.slice(0, piece.whole.length - 1);
+				if (num.whole.length > 0){
+					num.fractional = num.whole.slice(num.whole.length-1,num.whole.length) + num.fractional;
+					num.whole = num.whole.slice(0, num.whole.length - 1);
 				} else {
-					piece.fractional = '0' + piece.fractional ;
+					num.fractional = '0' + num.fractional ;
 				}
 			}
 		}
-		piece.exponent = Math.abs(fixed).toString();
-		piece.exponentSign = Math.sign(fixed) < 0 ? '-' : '';
+		num.exponent = Math.abs(fixed).toString();
+		num.exponentSign = Math.sign(fixed) < 0 ? '-' : '';
 	}],
-	['engineering', (pieces:Array<INumberPiece>, options: INumPostOptions):void => { }],
-	['scientific', (pieces:Array<INumberPiece>, options: INumPostOptions):void => { }]
+	['engineering', (num:INumberPiece, options: INumPostOptions):void => { }],
+	['scientific', (num:INumberPiece, options: INumPostOptions):void => { }]
 ]);
 
-function postProcessNumber(pieces:Array<INumberPiece>, options: INumPostOptions){
-	exponentModeMap.get(options.exponentMode)(pieces, options);
+function postProcessNumber(num:INumberPiece, options: INumPostOptions){
+	exponentModeMap.get(options.exponentMode)(num, options);
 }
 
 function getNumber(piece: INumberPiece):number{
@@ -177,8 +213,7 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 		text = text.replace('>=','\\ge');
 		text = text.replace('+-','\\pm');
 
-		const numPieces = new Array<INumberPiece>();
-		numPieces.push({...NumberPieceDefault});
+		const num : INumberPiece = generateNumberPiece();
 
 		const subParser = new TexParser(text, parser.stack.env, parser.configuration);
 		subParser.i=0;
@@ -189,7 +224,7 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 			subParser.i++;
 			if (char != '\\'){
 				if (mapping.has(char)){
-					mapping.get(char)(char, numPieces);
+					mapping.get(char)(char, num);
 				}
 			} else {
 				let macro = char;
@@ -200,16 +235,16 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 					}
 				}
 				if (mapping.has(macro)){
-					mapping.get(macro)(char, numPieces);
+					mapping.get(macro)(char, num);
 				}
 			}
 			
 		}
-		console.log(numPieces);
+		console.log(num);
 
-		postProcessNumber(numPieces,options);
+		postProcessNumber(num,options);
 
-		const displayResult = displayOutput(numPieces, options);
+		const displayResult = displayOutput(num, options);
 
 		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
     	return mml;

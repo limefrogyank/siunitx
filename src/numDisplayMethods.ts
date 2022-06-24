@@ -25,63 +25,25 @@ function addSpacing(text:string, digitGroupSize:number, minimum: number, spacer:
 }
 
 
-const groupNumbersMap = new Map<string,(numPieces:Array<INumberPiece>, options:INumOutputOptions)=>void>([
-	['all', (numPieces:Array<INumberPiece>, options:INumOutputOptions):void => {
+const groupNumbersMap = new Map<string,(num:INumberPiece, options:INumOutputOptions)=>void>([
+	['all', (num:INumberPiece, options:INumOutputOptions):void => {
 		console.log(options);
-		numPieces.forEach((v)=>{
-			v.whole = addSpacing(v.whole, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, false, options.digitGroupFirstSize, options.digitGroupOtherSize);
-			v.fractional = addSpacing(v.fractional, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, true, options.digitGroupFirstSize, options.digitGroupOtherSize);
-		});
+		num.whole = addSpacing(num.whole, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, false, options.digitGroupFirstSize, options.digitGroupOtherSize);
+		num.fractional = addSpacing(num.fractional, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, true, options.digitGroupFirstSize, options.digitGroupOtherSize);
+
 	}],
-	['decimal', (numPieces:Array<INumberPiece>, options:INumOutputOptions):void => {
+	['decimal', (num:INumberPiece, options:INumOutputOptions):void => {
 		console.log(options);
-		numPieces.forEach((v)=>{
-			v.fractional = addSpacing(v.fractional, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, true, options.digitGroupFirstSize, options.digitGroupOtherSize);
-		});
+		num.fractional = addSpacing(num.fractional, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, true, options.digitGroupFirstSize, options.digitGroupOtherSize);
+
 	}],
-	['integer', (numPieces:Array<INumberPiece>, options:INumOutputOptions):void => {
+	['integer', (num:INumberPiece, options:INumOutputOptions):void => {
 		console.log(options);
-		numPieces.forEach((v)=>{
-			v.whole = addSpacing(v.whole, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, false, options.digitGroupFirstSize, options.digitGroupOtherSize);
-		});
+		num.whole = addSpacing(num.whole, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, false, options.digitGroupFirstSize, options.digitGroupOtherSize);
 	}],
-	['none', (numPieces:Array<INumberPiece>, options:INumOutputOptions):void => {}]
+	['none', (num:INumberPiece, options:INumOutputOptions):void => {}]
 ]);
 
-
-function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string {
-	let output = piece.sign;
-	output += piece.whole;
-	output += (piece.decimal != '' ? options.outputDecimalMarker : '');
-	output += piece.fractional;
-	if (piece.exponentMarker != ''){
-		if (options.outputExponentMarker != ''){
-			output += options.outputExponentMarker;
-			output += piece.exponentSign + piece.exponent;
-		} else {
-			output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
-			output += options.exponentBase;
-			output += '^{' + piece.exponentSign + piece.exponent + '}';
-		}
-	}
-	return output;
-}
-
-const uncertaintyModeMapping = new Map<string, (piece:INumberPiece, options: INumOutputOptions)=>string>([
-	['separate', (piece:INumberPiece, options: INumOutputOptions):string => {
-		let output = '\\pm';
-		return output;
-	}],
-	['compact', (piece:INumberPiece, options: INumOutputOptions):string => {
-		let output = ''
-	}],
-	['full', (piece:INumberPiece, options: INumOutputOptions):string => {
-		
-	}],
-	['compact-marker', (piece:INumberPiece, options: INumOutputOptions):string => {
-		
-	}],
-])
 
 function displayUncertainty(piece:INumberPiece, options: INumOutputOptions) : string {
 	let output = piece.sign;
@@ -101,21 +63,61 @@ function displayUncertainty(piece:INumberPiece, options: INumOutputOptions) : st
 	return output;
 }
 
-const displayMapping = new Map<string, (piece:INumberPiece, options: INumOutputOptions)=>string>([
-	['number', displayNumber],
-	['uncertainty', displayUncertainty],
-	['comparator', displayNumber]
+
+const uncertaintyModeMapping = new Map<string, (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions)=>string>([
+	['separate', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
+		let output = '\\pm';
+		return output;
+	}],
+	['compact', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
+		let output = options.outputOpenUncertainty;
+		output += options.outputCloseUncertainty;
+		return output;
+	}],
+	['full', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
+		let output = '';
+		return output;
+	}],
+	['compact-marker', (value: INumberPiece, uncertainty:INumberPiece, options: INumOutputOptions):string => {
+		let output = options.outputOpenUncertainty;
+		output += options.outputCloseUncertainty;
+		return output;
+	}],
 ])
 
-export function displayOutput(pieces:Array<INumberPiece>, options: INumOutputOptions):string{
 
-	groupNumbersMap.get(options.groupDigits)(pieces, options);
+function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string {
+	let output = piece.sign;
+	output += piece.whole;
+	output += (piece.decimal != '' ? options.outputDecimalMarker : '');
+	output += piece.fractional;
+	if (piece.exponentMarker != ''){
+		if (options.outputExponentMarker != ''){
+			output += options.outputExponentMarker;
+			output += piece.exponentSign + piece.exponent;
+		} else {
+			output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+			output += options.exponentBase;
+			output += '^{' + piece.exponentSign + piece.exponent + '}';
+		}
+	}
 
+	piece.uncertainty.forEach(v=>{
+		output += uncertaintyModeMapping.get(options.uncertaintyMode)(piece,v,options);
+	});
+
+	return output;
+}
+
+export function displayOutput(num:INumberPiece, options: INumOutputOptions):string{
+
+	groupNumbersMap.get(options.groupDigits)(num, options);
+	console.log(num);
 	//const piece = pieces.find((v)=> v.type == 'number');
 	let output = '';
-	pieces.forEach(v=>{
-		output += displayMapping.get(v.type)(v,options);
-	});	
+	
+	output += displayNumber(num, options);
+		
 	
 	return output;
 }
