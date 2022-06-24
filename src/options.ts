@@ -206,11 +206,13 @@ function camelCase(input: string) {
 export function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
     const options : IOptions = {...defaultOptions};//{...UnitOptionDefaults};
 	if (optionString != null){
-		const optionArray = optionString.split(/,(?!\})/); // needed so that 'output-decimal-marker = {,}' parses with comma as value
+		console.log(optionString);
+		const optionArray = optionString.split(/,(?!\}|$)/g); // needed so that 'output-decimal-marker = {,}' parses with comma as value
+		console.log(optionArray);
 		optionArray.forEach((v,i,a)=> {
-			console.log(v);
+//			console.log(v);
 			let args = v.split('=');
-			console.log(args);
+//			console.log(args);
 			let prop = camelCase(args[0].trim());
 			if (args.length > 1){
 				if ( typeof options[prop] === 'number' ){

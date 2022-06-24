@@ -37,7 +37,14 @@ MathJax = {
 		String.raw`\num[output-decimal-marker = {,}]{1.23}`,
 		String.raw`\num[exponent-product = \times]{1e2}`,
 		String.raw`\num[exponent-product = \cdot]{1e2}`,
-		String.raw`\num[exponent-base = 2]{1e2}`
+		String.raw`\num[exponent-base = 2]{1e2}`,
+		String.raw`\num[output-exponent-marker = e]{1e2}`,
+		String.raw`\num[output-exponent-marker = \mathrm{E}]{1e2}`,
+		String.raw`\num{123.45(120)}`,
+		String.raw`\num{0.035(14)}`,
+		String.raw`\num[uncertainty-mode = compact-marker]{123.45(120)}`,
+		String.raw`\num[uncertainty-mode = compact-marker]{0.035(14)}`,
+		String.raw`\num[uncertainty-mode=separate,output-open-uncertainty=<,output-close-uncertainty=>,uncertainty-separator=\,]{1.234(5)}`
 ];
 	var table = document.getElementById('numTable');
 	for (var i = 0; i<num.length; i++){
