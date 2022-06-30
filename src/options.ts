@@ -63,7 +63,7 @@ export interface INumPostOptions{
 } 
 
 export interface INumOutputOptions {
-	bracketNegativeNumbers: boolean;
+	bracketNegativeNumbers: boolean;						// not implemented
 	digitGroupSize: number;
 	digitGroupFirstSize: number;
 	digitGroupOtherSize: number;
@@ -72,23 +72,23 @@ export interface INumOutputOptions {
 	groupDigits: GroupDigits;
 	groupMinimumDigits: number;
 	groupSeparator: string;
-	negativeColor: string;
+	negativeColor: string;									// not implemented
 	outputCloseUncertainty: string;
 	outputDecimalMarker: string;
 	outputExponentMarker: string;
 	outputOpenUncertainty: string;
-	printImplicitPlus: boolean;
-	printUnityMantissa:boolean;
-	printZeroExponent:boolean;
-	printZeroInteger:boolean;
+	printImplicitPlus: boolean;								// not implemented
+	printUnityMantissa:boolean;								// not implemented
+	printZeroExponent:boolean;								// not implemented
+	printZeroInteger:boolean;								// not implemented
 	tightSpacing:boolean;
-	uncertaintyDescriptorMode:UncertaintyDescriptorMode;
-	uncertaintyDescriptorSeparator:string;
-	uncertaintyDescriptors:string;
+	uncertaintyDescriptorMode:UncertaintyDescriptorMode; 	// not implemented
+	uncertaintyDescriptorSeparator:string;					// not implemented
+	uncertaintyDescriptors:string;							// not implemented
 	uncertaintyMode: UncertaintyMode;
 	uncertaintySeparator: string;
-	zeroDecimalAsSymbol: boolean;
-	zeroSymbol:string;
+	zeroDecimalAsSymbol: boolean;							// not implemented
+	zeroSymbol:string;										// not implemented
 }
 
 export interface INumOptions extends INumParseOptions, INumPostOptions, INumOutputOptions { };
@@ -123,7 +123,7 @@ export const NumParseOptionDefaults: INumParseOptions = {
 	inputExponentMarkers: 'dDeE',
 	inputIgnore:'',
 	inputOpenUncertainty:'(',
-	inputSigns:'+-', //\\pm\\mp',  // how do I disambiguate a regular sign from an uncertainty sign?
+	inputSigns:'+-\\pm\\mp',  // currently using a hack to differentiate between \\pm sign vs uncertaintysign
 	inputUncertaintySigns: '\\pm\\mp',
 	parseNumbers: true,
 	retainExplicitDecimalMarker: false,

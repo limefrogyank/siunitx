@@ -138,6 +138,12 @@ function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string 
 	output += piece.whole;
 	output += (piece.decimal != '' ? options.outputDecimalMarker : '');
 	output += piece.fractional;
+
+	// display uncertanties (if not null)
+	piece.uncertainty?.forEach(v=>{
+		output += uncertaintyModeMapping.get(options.uncertaintyMode)(v,piece,options);
+	});
+
 	if (piece.exponentMarker != ''){
 		if (options.outputExponentMarker != ''){
 			output += options.outputExponentMarker;
@@ -154,8 +160,6 @@ function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string 
 export function displayOutput(num:INumberPiece, options: INumOutputOptions):string{
 
 	groupNumbersMap.get(options.groupDigits)(num, options);
-	console.log(num);
-	//const piece = pieces.find((v)=> v.type == 'number');
 	let output = '';
 	
 	// display any prefix symbol such as less than, greater than, etc.
@@ -163,11 +167,6 @@ export function displayOutput(num:INumberPiece, options: INumOutputOptions):stri
 	
 	// display main number
 	output += displayNumber(num, options);
-	
-	// display uncertanties
-	num.uncertainty.forEach(v=>{
-		output += uncertaintyModeMapping.get(options.uncertaintyMode)(v,num,options);
-	});
 	
 	return output;
 }

@@ -23,6 +23,8 @@ export interface IUncertainty extends INumberPiece  {
 	completed: boolean; // mostly for uncertainty
 }
 
+declare type CharFunction = (text:string, numPiece: INumberPiece) => void;
+
 const NumberPieceDefault : INumberPiece = {
 	prefix: '',
 	sign: '',
@@ -86,13 +88,13 @@ function parseComparators(text:string, numPiece: INumberPiece){
 }
 
 function parseExponentMarkers(text:string, numPiece: INumberPiece){
-	let num: INumberPiece;
-	if (numPiece.uncertainty.length > 0){
-		num = numPiece.uncertainty[numPiece.uncertainty.length-1];
-	} else {
-		num = numPiece;
-	}
-	num.exponentMarker += text;
+	//let numPiece: INumberPiece;
+	// if (numPiece.uncertainty.length > 0){
+	// 	num = numPiece.uncertainty[numPiece.uncertainty.length-1];
+	// } else {
+	// 	num = numPiece;
+	// }
+	numPiece.exponentMarker += text;
 }
 
 function parseSigns(text:string, numPiece: INumberPiece){
@@ -134,29 +136,24 @@ function parseIgnore(text:string, numPiece: INumberPiece){
 	// do nothing
 }
 
-function generateMapping(options: INumParseOptions): Map<string,(text:string, numPiece: INumberPiece)=>void>{
-	const parseMap = new Map<string,(text:string, numPiece: INumberPiece)=>void>();
+// using two types for output.  Ex.  \\pm is used both as sign and as an uncertainty.  Need map of map for this one.
+function generateMapping(options: INumParseOptions): Map<string, CharFunction | Map<string,CharFunction>>{
+	const parseMap = new Map<string,CharFunction | Map<string,CharFunction>>();
 	//parseMap.set('\\', parseMacro);
 	let tempArray;
 	var matchMacrosOrChar = /[^\\\s]|(?:\\[^\\]*(?=\s|\\|$))/g;
+	while ((tempArray = matchMacrosOrChar.exec(options.inputComparators)) !== null) {
+		parseMap.set(tempArray[0], parseComparators);
+	}
+	while ((tempArray = matchMacrosOrChar.exec(options.inputSigns)) !== null) {
+		parseMap.set(tempArray[0], parseSigns);
+	}
 	while ((tempArray = matchMacrosOrChar.exec(options.inputDigits)) !== null) {
 		parseMap.set(tempArray[0], parseDigits);
 	}
 	while ((tempArray = matchMacrosOrChar.exec(options.inputDecimalMarkers)) !== null) {
 		parseMap.set(tempArray[0], parseDecimals);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputComparators)) !== null) {
-		parseMap.set(tempArray[0], parseComparators);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputExponentMarkers)) !== null) {
-		parseMap.set(tempArray[0], parseExponentMarkers);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputSigns)) !== null) {
-		parseMap.set(tempArray[0], parseSigns);
-	}
-	while ((tempArray = matchMacrosOrChar.exec(options.inputIgnore)) !== null) {
-		parseMap.set(tempArray[0], parseIgnore);
-	}
+	}	
 	while ((tempArray = matchMacrosOrChar.exec(options.inputOpenUncertainty)) !== null) {
 		parseMap.set(tempArray[0], parseOpenUncertainty);
 	}
@@ -164,7 +161,21 @@ function generateMapping(options: INumParseOptions): Map<string,(text:string, nu
 		parseMap.set(tempArray[0], parseCloseUncertainty);
 	}
 	while ((tempArray = matchMacrosOrChar.exec(options.inputUncertaintySigns)) !== null) {
-		parseMap.set(tempArray[0], parseUncertaintySigns);
+		if (parseMap.has(tempArray[0])){
+			const firstFunc = parseMap.get(tempArray[0]) as CharFunction;
+			const innerMap = new Map<string, CharFunction>();
+			innerMap.set('inputSigns', firstFunc);
+			innerMap.set('inputUncertaintySigns', parseUncertaintySigns);
+			parseMap.set(tempArray[0], innerMap);
+		} else {
+			parseMap.set(tempArray[0], parseUncertaintySigns);
+		}
+	}
+	while ((tempArray = matchMacrosOrChar.exec(options.inputExponentMarkers)) !== null) {
+		parseMap.set(tempArray[0], parseExponentMarkers);
+	}
+	while ((tempArray = matchMacrosOrChar.exec(options.inputIgnore)) !== null) {
+		parseMap.set(tempArray[0], parseIgnore);
 	}
 
 	return parseMap;
@@ -236,7 +247,17 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 			subParser.i++;
 			if (char != '\\'){
 				if (mapping.has(char)){
-					mapping.get(char)(char, num);
+					const func = mapping.get(char);
+					if (typeof func == 'function'){
+						(mapping.get(char) as CharFunction)(char, num);
+					} else {
+						if (num.whole =='' && num.decimal == ''){
+							(func as Map<string,CharFunction>).get('inputSigns')(char, num);
+						} else {
+							(func as Map<string,CharFunction>).get('inputUncertaintySigns')(char, num);
+						}
+					}
+					
 				}
 			} else {
 				let macro = char;
@@ -251,7 +272,17 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 				}
 				console.log('tryeing to find:  ' + macro);
 				if (mapping.has(macro)){
-					mapping.get(macro)(char, num);
+					const func = mapping.get(macro);
+					if (typeof func == 'function'){
+						(mapping.get(macro) as CharFunction)(macro, num);
+					} else {
+						console.log(typeof func);
+						if (num.whole =='' && num.decimal == ''){
+							(func as Map<string,CharFunction>).get('inputSigns')(macro, num);
+						} else {
+							(func as Map<string,CharFunction>).get('inputUncertaintySigns')(macro, num);
+						}
+					}
 				}
 			}
 			
