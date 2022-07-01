@@ -63,7 +63,7 @@ export interface INumPostOptions{
 } 
 
 export interface INumOutputOptions {
-	bracketNegativeNumbers: boolean;						// not implemented
+	bracketNegativeNumbers: boolean;
 	digitGroupSize: number;
 	digitGroupFirstSize: number;
 	digitGroupOtherSize: number;
@@ -72,16 +72,16 @@ export interface INumOutputOptions {
 	groupDigits: GroupDigits;
 	groupMinimumDigits: number;
 	groupSeparator: string;
-	negativeColor: string;									// not implemented
+	negativeColor: string;
 	outputCloseUncertainty: string;
 	outputDecimalMarker: string;
 	outputExponentMarker: string;
 	outputOpenUncertainty: string;
-	printImplicitPlus: boolean;								// not implemented
-	printUnityMantissa:boolean;								// not implemented
-	printZeroExponent:boolean;								// not implemented
-	printZeroInteger:boolean;								// not implemented
-	tightSpacing:boolean;
+	printImplicitPlus: boolean;
+	printUnityMantissa:boolean;
+	printZeroExponent:boolean;
+	printZeroInteger:boolean;
+	tightSpacing:boolean;									// not implemented
 	uncertaintyDescriptorMode:UncertaintyDescriptorMode; 	// not implemented
 	uncertaintyDescriptorSeparator:string;					// not implemented
 	uncertaintyDescriptors:string;							// not implemented
@@ -217,6 +217,8 @@ export function processOptions(defaultOptions: IOptions, optionString: string) :
 			if (args.length > 1){
 				if ( typeof options[prop] === 'number' ){
 					options[prop] = +(args[1].trim());
+				} else if (typeof options[prop] === 'boolean') {
+					options[prop] = (args[1].trim() === 'true');
 				} else {
 					options[prop] = args[1].trim();
 				}

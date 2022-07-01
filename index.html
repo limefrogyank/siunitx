@@ -29,13 +29,16 @@ MathJax = {
 	$$ 1.23 $$
 	$$ 1,23 $$
 	$$ 1{,}23 $$
+<h2>Num</h2>
 <table id="numTable" class="tableStyle"></table>
+<h2>Unit</h2>
 <table id="unitTable" class="tableStyle"></table>
 <script>
 	var num = [
 		String.raw`\num{1234}`,
 		String.raw`\num{12345}`,
 		String.raw`\num{0.123}`,
+		String.raw`\num{.123}`,
 		String.raw`\num{0,1234}`,
 		String.raw`\num{.12345}`,
 		String.raw`\num{3.45d-4}`,
@@ -62,7 +65,26 @@ MathJax = {
 		String.raw`\num[uncertainty-mode = compact-marker]{0.035(14)}`,
 		String.raw`\num[uncertainty-mode=separate]{1.234 +- 0.005}`,
 		String.raw`\num[uncertainty-mode=separate,output-open-uncertainty=<,output-close-uncertainty=>,uncertainty-separator=\,]{1.234(5)}`,
-		String.raw`\num[uncertainty-mode=compact,output-open-uncertainty=<,output-close-uncertainty=>,uncertainty-separator=\,]{1.234(5)}`
+		String.raw`\num[uncertainty-mode=compact,output-open-uncertainty=<,output-close-uncertainty=>,uncertainty-separator=\,]{1.234(5)}`,
+		String.raw`\num{-15673}`,
+		String.raw`\num[bracket-negative-numbers]{-15673}`,
+		String.raw`\num{-15673}`,
+		String.raw`\num[negative-color = red]{-15673}`,
+		String.raw`\num[negative-color = red,bracket-negative-numbers]{-15673}`,
+		String.raw`\num{345}`,
+		String.raw`\num[print-implicit-plus]{345}`,
+		String.raw`\num{1e4}`,
+		String.raw`\num[print-unity-mantissa = false]{1e4}`,
+		String.raw`\num{444e0}`,
+		String.raw`\num[print-zero-exponent = true]{444e0}`,
+		String.raw`\num{0.123}`,
+		String.raw`\num[print-zero-integer = false]{0.123}`,
+		String.raw`\num{123.00}`,
+		String.raw`\num[zero-decimal-as-symbol]{123.00}`,
+		String.raw`\num[zero-decimal-as-symbol, zero-symbol={[{----}]}]{123.00}`,
+		String.raw``,
+		String.raw``,
+
 ];
 	var table = document.getElementById('numTable');
 	for (var i = 0; i<num.length; i++){

@@ -1,6 +1,5 @@
 import { INumberPiece, IUncertainty } from "./numMethods";
 import { INumOutputOptions } from "./options";
-import { prefixSymbol } from "./units";
 
 function addSpacing(text:string, digitGroupSize:number, minimum: number, spacer:string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number ){
 	if (text.length >= minimum){
@@ -134,25 +133,83 @@ const uncertaintyModeMapping = new Map<string, ( uncertainty:IUncertainty, value
 
 
 function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string {
-	let output = piece.sign;
-	output += piece.whole;
-	output += (piece.decimal != '' ? options.outputDecimalMarker : '');
-	output += piece.fractional;
+	let output = '';
+	if (options.negativeColor != '') {
+		output += '{\\color{' + options.negativeColor + '}';
+	}
+	if (options.bracketNegativeNumbers){
+		if (piece.sign == '-'){
+			output += '(';
+		}
+	} else {
+		if (options.printImplicitPlus && (piece.sign == '+' || piece.sign == '')){
+			output += '+';
+		} else {
+			output += piece.sign == '+' ? '' : piece.sign;
+		}
+	}
 
+	// if unity mantissa AND don't print it, then we don't need the rest of this.
+	if (piece.whole == '1' && piece.fractional == '' && !options.printUnityMantissa){
+		// don't do anything UNLESS exponent is also zero and printZeroExponent is false
+		if (!options.printZeroExponent && (piece.exponent == '' || (piece.exponent == '1' && piece.exponentSign != '-'))){
+			output += '1';
+		}
+	} else {
+		if ((piece.whole == '' && piece.fractional) || piece.whole == '0'){
+			if (options.printZeroInteger){
+				output += '0';
+			}	
+		} else {
+			output += piece.whole;
+		}
+		output += (piece.decimal != '' ? options.outputDecimalMarker : '');
+		if (options.zeroDecimalAsSymbol && +(piece.fractional) == 0){
+			output += options.zeroSymbol;
+		} else {
+			output += piece.fractional;
+		}
+	}
 	// display uncertanties (if not null)
 	piece.uncertainty?.forEach(v=>{
 		output += uncertaintyModeMapping.get(options.uncertaintyMode)(v,piece,options);
 	});
 
-	if (piece.exponentMarker != ''){
+	if (options.printZeroExponent && (piece.exponent == '' || (piece.exponent == '0'))){
 		if (options.outputExponentMarker != ''){
 			output += options.outputExponentMarker;
-			output += piece.exponentSign + piece.exponent;
+			output += '0';
 		} else {
-			output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+			output += options.exponentProduct;
+			output += options.exponentBase;
+			output += '^{0}';
+		}
+	} else if (piece.exponent != '' && piece.exponent != '0') {
+		// if unity mantissa AND don't print it, then can't print exponentMarkers (E) nor exponentProduct (\\times)
+		if (piece.whole == '1' && piece.fractional == '' && !options.printUnityMantissa){
 			output += options.exponentBase;
 			output += '^{' + piece.exponentSign + piece.exponent + '}';
+		} else {
+			if (piece.exponentMarker != ''){
+				if (options.outputExponentMarker != ''){
+					output += options.outputExponentMarker;
+					output += piece.exponentSign + piece.exponent;
+				} else {
+					output += (piece.whole != '' || piece.fractional != '') ? options.exponentProduct : '';
+					output += options.exponentBase;
+					output += '^{' + piece.exponentSign + piece.exponent + '}';
+				}
+			}
 		}
+	}
+
+	if (options.bracketNegativeNumbers){
+		if (piece.sign == '-'){
+			output += ')';
+		}
+	} 
+	if (options.negativeColor != '') {
+		output += '}';
 	}
 	return output;
 }
