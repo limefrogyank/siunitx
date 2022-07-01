@@ -187,10 +187,16 @@ export function findOptions(parser:TexParser): string {
 		return options;
 	}
 	let j = ++parser.i;
+	let depth=0;
 	while (parser.i < parser.string.length){
-		if (parser.string.charAt(parser.i++) == ']'){
-			return parser.string.slice(j, parser.i -1);
+		if (parser.string.charAt(parser.i) == '{') depth++;
+		else if (parser.string.charAt(parser.i) == '}') depth--;
+		else if (parser.string.charAt(parser.i) == ']' && depth == 0){
+			const result = parser.string.slice(j, parser.i);
+			parser.i++;
+			return result;
 		}
+		parser.i++;
 	}
 	throw new TexError('MissingCloseBracket',
 	'Could not find closing \']\' for argument to %1', parser.currentCS);
@@ -203,7 +209,8 @@ function camelCase(input: string) {
     });
 }
 
-export function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
+// deprecated
+function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
     const options : IOptions = {...defaultOptions};//{...UnitOptionDefaults};
 	if (optionString != null){
 		console.log(optionString);
@@ -230,4 +237,73 @@ export function processOptions(defaultOptions: IOptions, optionString: string) :
 	}
 	//console.log(options);
     return options;
+}
+
+export function processOptions2(defaultOptions: IOptions, optionString: string) : IOptions {
+	const options : IOptions = {...defaultOptions};
+	if (optionString != null){
+		let prop = '';
+		let onValue=false;
+		let depth = 0;
+		let value = '';
+		for (const c of optionString) {
+			if (c == '{'){
+				if (onValue){
+					value += c;
+				} else {
+					prop += c;
+				}
+				depth++;
+			} 
+			else if (c == '}') {
+				depth--;
+				if (onValue){
+					value += c;
+				} else {
+					prop += c;
+				}
+			}
+			else if (c == ',' && depth == 0){
+				prop = camelCase(prop.trim());
+				if (value == ''){
+					options[prop] = true;
+				}
+				else if ( typeof options[prop] === 'number' ){
+					options[prop] = +(value.trim());
+				} else if (typeof options[prop] === 'boolean') {
+					options[prop] = (value.trim() === 'true');
+				} else {
+					options[prop] = value.trim();
+				}
+				prop = '';
+				value = '';
+				onValue = false;
+			}
+			else if (c == '=' && depth == 0){
+				onValue = true;
+			}
+			else {
+				if (onValue){
+					value += c;
+				} else {
+					prop += c;
+				}
+			}
+
+
+		}
+
+		prop = camelCase(prop.trim());
+		if (value == ''){
+			options[prop] = true;
+		}
+		else if ( typeof options[prop] === 'number' ){
+			options[prop] = +(value.trim());
+		} else if (typeof options[prop] === 'boolean') {
+			options[prop] = (value.trim() === 'true');
+		} else {
+			options[prop] = value.trim();
+		}
+	}
+	return options;
 }

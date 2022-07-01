@@ -211,6 +211,7 @@ function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string 
 	if (options.negativeColor != '') {
 		output += '}';
 	}
+	console.log(output);
 	return output;
 }
 

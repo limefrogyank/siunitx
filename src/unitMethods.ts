@@ -1,9 +1,7 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import { StackItem } from "mathjax-full/js/input/tex/StackItem";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { ParseMethod, ParseResult } from "mathjax-full/js/input/tex/Types";
-import { IOptions, IUnitOptions, processOptions, QualifierMode } from "./options";
+import { IUnitOptions, QualifierMode } from "./options";
 import { prefixSymbol, unitSymbol } from "./units";
 
 interface IUnitPiece {

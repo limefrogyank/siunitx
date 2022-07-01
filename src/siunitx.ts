@@ -4,7 +4,7 @@ import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { parseNumber } from './numMethods';
-import { findOptions, IOptions, IUnitOptions, NumOptionDefaults, processOptions, UnitOptionDefaults } from './options';
+import { findOptions, IOptions, IUnitOptions, NumOptionDefaults, processOptions2, UnitOptionDefaults } from './options';
 import { parseUnit } from './unitMethods';
 
 
@@ -58,7 +58,7 @@ const siunitxMap = new CommandMap('siunitxMap', {
     qty: ['siunitxToken', 'qty']
 }, {
     siunitxToken: (parser, name, type) => {
-        const options = processOptions(parser.options as IOptions, findOptions(parser));
+        const options = processOptions2(parser.options as IOptions, findOptions(parser));
 
         //parser.configuration.packageData.set('siunitx', options);
 
