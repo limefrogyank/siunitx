@@ -1,10 +1,3 @@
-import { AbstractInputJax } from "mathjax-full/js/core/InputJax";
-import { TeX } from "mathjax-full/js/input/tex";
-import { ParserConfiguration } from "mathjax-full/js/input/tex/Configuration";
-import ParseOptions from "mathjax-full/js/input/tex/ParseOptions";
-import { EnvironmentMap } from "mathjax-full/js/input/tex/SymbolMap";
-import { TagsFactory } from "mathjax-full/js/input/tex/Tags";
-import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { INumPostOptions, IOptions } from "./options";
 import { GlobalParser } from "./siunitx";
@@ -52,11 +45,6 @@ function convertToScientific(num:INumberPiece, options: INumPostOptions) : void 
 }
 
 function convertToXExponent(num:INumberPiece, targetExponent: number, options: INumPostOptions){
-
-	console.log('whole: ' + num.whole);
-	console.log('frac: ' + num.fractional);
-	console.log('exp: '+ num.exponentSign + num.exponent);
-
 	if (num == null) return;
 	// count difference between target exponent and current one.
 	const diff = targetExponent - +(num.exponentSign + num.exponent);
@@ -83,9 +71,6 @@ function convertToXExponent(num:INumberPiece, targetExponent: number, options: I
 	}
 	num.exponent = Math.abs(targetExponent).toString();
 	num.exponentSign = Math.sign(targetExponent) < 0 ? '-' : '';
-	console.log('whole: ' + num.whole);
-	console.log('frac: ' + num.fractional);
-	console.log('exp: '+ num.exponentSign + num.exponent);
 }
 
 function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
@@ -103,20 +88,10 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 }
 
 function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
-	const fixed = options.fixedExponent;
-	if (fixed == 0) {
-		// remove exponent completely
-		convertToScientific(num, options);
-		
-		convertToXExponent(num, fixed, options);
-
-	} else {
-		// convert to scientific, then move decimal...
-		convertToScientific(num, options);
-		
-		convertToXExponent(num, fixed, options);
-	}
+	// convert to scientific, then move decimal...
+	convertToScientific(num, options);
 	
+	convertToXExponent(num, options.fixedExponent, options);
 }
 
 const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
