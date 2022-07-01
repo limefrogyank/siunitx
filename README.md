@@ -1,5 +1,8 @@
 # siunitx extension for MathJax v3
 
+## Demo
+https://limefrogyank.github.io/siunitx/
+
 ## Scope
 what we want (because some siunitx features are not appropriate for MathJax)
 
