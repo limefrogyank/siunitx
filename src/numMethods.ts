@@ -2,7 +2,8 @@ import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { displayOutput } from "./numDisplayMethods";
-import { INumOptions, INumOutputOptions, INumParseOptions, INumPostOptions } from "./options";
+import { postProcessNumber } from "./numPostProcessMethods";
+import { INumOptions, INumParseOptions } from "./options";
 
 
 
@@ -182,59 +183,19 @@ function generateMapping(options: INumParseOptions): Map<string, CharFunction | 
 }
 
 
-
-const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
-	['input', (num:INumberPiece, options: INumPostOptions):void => { }],
-	['fixed', (num:INumberPiece, options: INumPostOptions):void => {
-		const fixed = options.fixedExponent;
-		//const piece = pieces.find((v)=> v.type == 'number');
-		if (num == null) return;
-		const diff = fixed - +(num.exponentSign + num.exponent);
-		const dir = Math.sign(diff);  // +: move numbers from frac to whole, -: move the other way
-		for (let i=0; i< Math.abs(diff); i++){
-			if (dir > 0){
-				if (num.fractional.length > 0){
-					num.whole = num.whole + num.fractional.slice(0,1);
-					num.fractional = num.fractional.slice(0, num.fractional.length - 1);
-				} else {
-					num.whole = num.whole + '0';
-				}
-			} else {
-				if (num.whole.length > 0){
-					num.fractional = num.whole.slice(num.whole.length-1,num.whole.length) + num.fractional;
-					num.whole = num.whole.slice(0, num.whole.length - 1);
-				} else {
-					num.fractional = '0' + num.fractional ;
-				}
-			}
-		}
-		num.exponent = Math.abs(fixed).toString();
-		num.exponentSign = Math.sign(fixed) < 0 ? '-' : '';
-	}],
-	['engineering', (num:INumberPiece, options: INumPostOptions):void => { }],
-	['scientific', (num:INumberPiece, options: INumPostOptions):void => { }]
-]);
-
-function postProcessNumber(num:INumberPiece, options: INumPostOptions){
-	exponentModeMap.get(options.exponentMode)(num, options);
-}
-
 function getNumber(piece: INumberPiece):number{
 	return +(piece.sign + piece.whole + (piece.decimal != '' ? '.' : '') + piece.fractional + (piece.exponentMarker != '' ? 'e' : '') + piece.exponentSign + piece.exponent);
 }
 
-
-
-
-export function parseNumber(parser:TexParser, text:string, options: INumOptions): MmlNode{
-	if (options.parseNumbers){
+export function parseNumber(parser:TexParser, text:string, options: INumOptions) : INumberPiece {
+	
 		const mapping = generateMapping(options);
 		text = text.replace('<<','\\ll');
 		text = text.replace('>>','\\gg');
 		text = text.replace('<=','\\le');
 		text = text.replace('>=','\\ge');
 		text = text.replace('+-','\\pm');
-		console.log(text);
+		//console.log(text);
 
 		const num : INumberPiece = generateNumberPiece();
 
@@ -267,16 +228,16 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 					if (char != '\\' && char != ' '){
 						macro += char;
 					}
-					console.log(macro);
+					//console.log(macro);
 					subParser.i++;
 				}
-				console.log('tryeing to find:  ' + macro);
+				//console.log('tryeing to find:  ' + macro);
 				if (mapping.has(macro)){
 					const func = mapping.get(macro);
 					if (typeof func == 'function'){
 						(mapping.get(macro) as CharFunction)(macro, num);
 					} else {
-						console.log(typeof func);
+						//console.log(typeof func);
 						if (num.whole =='' && num.decimal == ''){
 							(func as Map<string,CharFunction>).get('inputSigns')(macro, num);
 						} else {
@@ -287,7 +248,15 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 			}
 			
 		}
-		console.log(num);
+		//console.log(num);
+		return num;
+}
+
+export function processNumber(parser:TexParser, text:string, options: INumOptions): MmlNode{
+	
+	if (options.parseNumbers){
+
+		const num = parseNumber(parser,text,options);
 
 		postProcessNumber(num,options);
 

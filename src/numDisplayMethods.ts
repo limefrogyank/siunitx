@@ -27,18 +27,15 @@ function addSpacing(text:string, digitGroupSize:number, minimum: number, spacer:
 
 const groupNumbersMap = new Map<string,(num:INumberPiece, options:INumOutputOptions)=>void>([
 	['all', (num:INumberPiece, options:INumOutputOptions):void => {
-		console.log(options);
 		num.whole = addSpacing(num.whole, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, false, options.digitGroupFirstSize, options.digitGroupOtherSize);
 		num.fractional = addSpacing(num.fractional, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, true, options.digitGroupFirstSize, options.digitGroupOtherSize);
 
 	}],
 	['decimal', (num:INumberPiece, options:INumOutputOptions):void => {
-		console.log(options);
 		num.fractional = addSpacing(num.fractional, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, true, options.digitGroupFirstSize, options.digitGroupOtherSize);
 
 	}],
 	['integer', (num:INumberPiece, options:INumOutputOptions):void => {
-		console.log(options);
 		num.whole = addSpacing(num.whole, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, false, options.digitGroupFirstSize, options.digitGroupOtherSize);
 	}],
 	['none', (num:INumberPiece, options:INumOutputOptions):void => {}]

@@ -3,7 +3,7 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
-import { parseNumber } from './numMethods';
+import { processNumber } from './numMethods';
 import { findOptions, IOptions, IUnitOptions, NumOptionDefaults, processOptions2, UnitOptionDefaults } from './options';
 import { parseUnit } from './unitMethods';
 
@@ -29,7 +29,7 @@ function parseAngle(parser:TexParser, text:string):MmlNode {
 
 const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOptions )=>MmlNode>([
     ['\\num', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
-        const node = parseNumber(parser, parser.GetArgument(name), options);
+        const node = processNumber(parser, parser.GetArgument(name), options);
         return node;
     }],
     ['\\ang', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
@@ -42,7 +42,7 @@ const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOpti
         return node;
     }],
     ['\\qty', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
-        const node1 = parseNumber(parser, parser.GetArgument(name), options);
+        const node1 = processNumber(parser, parser.GetArgument(name), options);
         parser.Push(node1);
         const text = parser.GetArgument(name);
         const node = parseUnit(parser, text, options);
@@ -51,6 +51,8 @@ const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOpti
 
 ])
 
+export var GlobalParser:TexParser;
+
 const siunitxMap = new CommandMap('siunitxMap', {
     num: ['siunitxToken', 'num'],
     ang: ['siunitxToken', 'ang'],
@@ -58,6 +60,8 @@ const siunitxMap = new CommandMap('siunitxMap', {
     qty: ['siunitxToken', 'qty']
 }, {
     siunitxToken: (parser, name, type) => {
+        GlobalParser = parser;
+
         const options = processOptions2(parser.options as IOptions, findOptions(parser));
 
         //parser.configuration.packageData.set('siunitx', options);

@@ -26,13 +26,13 @@ MathJax = {
 			border: 1px solid;
 		}
 	</style>
-	$$ 1.23 $$
-	$$ 1,23 $$
-	$$ 1{,}23 $$
+
 <h2>Num</h2>
 <table id="numTable" class="tableStyle"></table>
+
 <h2>Unit</h2>
 <table id="unitTable" class="tableStyle"></table>
+
 <script>
 	var num = [
 		String.raw`\num{1234}`,
@@ -50,6 +50,27 @@ MathJax = {
 		String.raw`\num{12.3 +- 6}`,
 		String.raw`\num{123.4(12)}`,
 		String.raw`\num{123.4(1.2)}`,
+
+		String.raw`\num{0.001}`,
+		String.raw`\num{0.0100}`,
+		String.raw`\num{1200}`,
+		String.raw`\num[exponent-mode = scientific]{0.001}`,
+		String.raw`\num[exponent-mode = scientific]{0.0100}`,
+		String.raw`\num[exponent-mode = scientific]{1200}`,
+		String.raw`\num[exponent-mode = engineering]{0.001}`,
+		String.raw`\num[exponent-mode = engineering]{0.0100}`,
+		String.raw`\num[exponent-mode = engineering]{1200}`,
+		String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{0.001}`,
+		String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{0.0100}`,
+		String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{1200}`,
+		String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{0.0100}`,
+		String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{1.00e-2}`,
+		String.raw``,
+		String.raw``,
+		String.raw``,
+		String.raw``,
+
+
 		String.raw`\num[group-minimum-digits = 5]{1234.5678}`,
 		String.raw`\num[group-minimum-digits = 5]{12345.67890}`,
 		String.raw`\num[digit-group-other-size = 2]{1234567890}`,
@@ -64,8 +85,8 @@ MathJax = {
 		String.raw`\num[uncertainty-mode = compact-marker]{123.45(120)}`,
 		String.raw`\num[uncertainty-mode = compact-marker]{0.035(14)}`,
 		String.raw`\num[uncertainty-mode=separate]{1.234 +- 0.005}`,
-		String.raw`\num[uncertainty-mode=separate,output-open-uncertainty=<,output-close-uncertainty=>,uncertainty-separator=\,]{1.234(5)}`,
-		String.raw`\num[uncertainty-mode=compact,output-open-uncertainty=<,output-close-uncertainty=>,uncertainty-separator=\,]{1.234(5)}`,
+		String.raw`\num[uncertainty-mode=separate,output-open-uncertainty={[},output-close-uncertainty={]},uncertainty-separator=\,]{1.234(5)}`,
+		String.raw`\num[{uncertainty-mode=compact,output-open-uncertainty=[,output-close-uncertainty=],uncertainty-separator=\,}]{1.234(5)}`,
 		String.raw`\num{-15673}`,
 		String.raw`\num[bracket-negative-numbers]{-15673}`,
 		String.raw`\num{-15673}`,
@@ -82,8 +103,7 @@ MathJax = {
 		String.raw`\num{123.00}`,
 		String.raw`\num[zero-decimal-as-symbol]{123.00}`,
 		String.raw`\num[zero-decimal-as-symbol, zero-symbol=\text{[---]}]{123.00}`,
-		String.raw``,
-		String.raw``,
+
 
 ];
 	var table = document.getElementById('numTable');
@@ -130,7 +150,7 @@ MathJax = {
 
 
 	
-	$$ \qty{1.25}{\kilo\gram\meter\squared\per\second\squared} $$
+	<!-- $$ \qty{1.25}{\kilo\gram\meter\squared\per\second\squared} $$ -->
 </body>
 
 </html>

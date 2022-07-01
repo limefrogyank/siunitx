@@ -189,7 +189,7 @@ export function findOptions(parser:TexParser): string {
 	let j = ++parser.i;
 	let depth=0;
 	while (parser.i < parser.string.length){
-		if (parser.string.charAt(parser.i) == '{') depth++;
+		if (parser.string.charAt(parser.i) == '{') depth++; 
 		else if (parser.string.charAt(parser.i) == '}') depth--;
 		else if (parser.string.charAt(parser.i) == ']' && depth == 0){
 			const result = parser.string.slice(j, parser.i);
@@ -241,10 +241,17 @@ function processOptions(defaultOptions: IOptions, optionString: string) : IOptio
 
 export function processOptions2(defaultOptions: IOptions, optionString: string) : IOptions {
 	const options : IOptions = {...defaultOptions};
+	console.log(optionString);
 	if (optionString != null){
+		// check if wrapped in curly braces and remove them
+		while (optionString.startsWith('{') && optionString.endsWith('}')){
+			optionString = optionString.slice(1, optionString.length-1);
+		}
+		console.log(optionString);
 		let prop = '';
 		let onValue=false;
 		let depth = 0;
+		let escaped = false;
 		let value = '';
 		for (const c of optionString) {
 			if (c == '{'){
@@ -263,8 +270,17 @@ export function processOptions2(defaultOptions: IOptions, optionString: string) 
 					prop += c;
 				}
 			}
-			else if (c == ',' && depth == 0){
+			else if (c == '\\'){
+				escaped = true;
+				if (onValue){
+					value += c;
+				} else {
+					prop += c;
+				}
+			}
+			else if (c == ',' && depth == 0 && !escaped){
 				prop = camelCase(prop.trim());
+				console.log(prop + ': ' + value);
 				if (value == ''){
 					options[prop] = true;
 				}
@@ -294,6 +310,7 @@ export function processOptions2(defaultOptions: IOptions, optionString: string) 
 		}
 
 		prop = camelCase(prop.trim());
+		console.log(prop + ': ' + value);
 		if (value == ''){
 			options[prop] = true;
 		}
@@ -305,5 +322,6 @@ export function processOptions2(defaultOptions: IOptions, optionString: string) 
 			options[prop] = value.trim();
 		}
 	}
+	console.log(options);
 	return options;
 }
