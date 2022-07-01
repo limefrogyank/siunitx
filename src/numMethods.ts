@@ -183,10 +183,6 @@ function generateMapping(options: INumParseOptions): Map<string, CharFunction | 
 }
 
 
-function getNumber(piece: INumberPiece):number{
-	return +(piece.sign + piece.whole + (piece.decimal != '' ? '.' : '') + piece.fractional + (piece.exponentMarker != '' ? 'e' : '') + piece.exponentSign + piece.exponent);
-}
-
 export function parseNumber(parser:TexParser, text:string, options: INumOptions) : INumberPiece {
 	
 		const mapping = generateMapping(options);
