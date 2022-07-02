@@ -55,7 +55,7 @@ export interface INumPostOptions{
 	minimumIntegerDigits:number;
 	minimumDecimalDigits:number;
 	roundHalf: 'up' | 'even';
-	roundMinimum: number;
+	roundMinimum: string;
 	roundMode: RoundMode;
 	roundPad: boolean;
 	roundPrecision: number;
@@ -87,8 +87,8 @@ export interface INumOutputOptions {
 	uncertaintyDescriptors:string;							// not implemented
 	uncertaintyMode: UncertaintyMode;
 	uncertaintySeparator: string;
-	zeroDecimalAsSymbol: boolean;							// not implemented
-	zeroSymbol:string;										// not implemented
+	zeroDecimalAsSymbol: boolean;
+	zeroSymbol:string;
 }
 
 export interface INumOptions extends INumParseOptions, INumPostOptions, INumOutputOptions { };
@@ -141,7 +141,7 @@ export const NumPostOptionDefaults: INumPostOptions = {
 	minimumIntegerDigits: 0,
 	minimumDecimalDigits: 0,
 	roundHalf: 'up',
-	roundMinimum: 0,
+	roundMinimum: '0',
 	roundMode:'none',
 	roundPad: true,
 	roundPrecision: 2,

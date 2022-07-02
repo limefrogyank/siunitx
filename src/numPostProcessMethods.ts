@@ -1,6 +1,8 @@
+import TexParser from "mathjax-full/js/input/tex/TexParser";
+import { WatchIgnorePlugin } from "webpack";
 import { convertUncertaintyToBracket } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
-import { INumOutputOptions, INumPostOptions, IOptions } from "./options";
+import { INumOptions, INumOutputOptions, INumPostOptions, IOptions } from "./options";
 import { GlobalParser } from "./siunitx";
 
 function convertToScientific(num:INumberPiece, options: INumPostOptions) : void {
@@ -289,8 +291,6 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 
 		// padding doesn't make sense with uncertainties, skip it.
 
-
-
 	}
 }
 
@@ -313,6 +313,48 @@ export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
 	}
 
 	roundModeMap.get(options.roundMode)(num, options);
+	
+	// check if zero, then do stuff
+	const current = Math.abs(+(num.whole + num.decimal + num.fractional + (num.exponentMarker != '' ? 'e' : '') + num.exponentSign + num.exponent));
+	if (current == 0) {
+		if (options.roundMinimum != '0'){
+			num.prefix = '\\lt'; 
+			const minimumNum = parseNumber(GlobalParser, options.roundMinimum, <INumOptions>options);
+			num.sign = minimumNum.sign;
+			num.whole = minimumNum.whole;
+			num.decimal = minimumNum.decimal;
+			num.fractional = minimumNum.fractional;
+			num.exponentMarker = minimumNum.exponentMarker;
+			num.exponentSign = minimumNum.exponentSign;
+			num.exponent = minimumNum.exponent;
+			
+		} else if (options.roundZeroPositive){
+			num.sign = '';
+		}
+	}
+
+	if (options.dropZeroDecimal && +(num.fractional) == 0){
+		num.fractional = '';
+		num.decimal = '';
+	}
+
+	if (options.minimumIntegerDigits > 0){
+		const pad = options.minimumIntegerDigits - num.whole.length;
+		if (pad > 0){
+			for (let i=0; i<pad; i++){
+				num.whole = '0' + num.whole;
+			}
+		}
+	}
+
+	if (options.minimumDecimalDigits > 0){
+		const pad = options.minimumDecimalDigits - num.fractional.length;
+		if (pad > 0){
+			for (let i=0; i<pad; i++){
+				num.fractional += '0';
+			}
+		}
+	}
 	
 	exponentModeMap.get(options.exponentMode)(num, options);
 
