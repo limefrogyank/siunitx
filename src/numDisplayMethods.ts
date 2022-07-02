@@ -64,7 +64,7 @@ function convertUncertaintyToPlusMinus(uncertainty: IUncertainty, piece:INumberP
 	}
 }
 
-function convertUncertaintyToBracket(uncertainty: IUncertainty, piece:INumberPiece, options: INumOutputOptions) : void {
+export function convertUncertaintyToBracket(uncertainty: IUncertainty, piece:INumberPiece, options: INumOutputOptions) : void {
 	if (uncertainty.type == 'bracket') {
 		// check to make sure that uncertainty doesn't need a decimal point via 'compact marker'
 		const diff = uncertainty.whole.length - piece.fractional.length;

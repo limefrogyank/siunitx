@@ -1,5 +1,6 @@
+import { convertUncertaintyToBracket } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
-import { INumPostOptions, IOptions } from "./options";
+import { INumOutputOptions, INumPostOptions, IOptions } from "./options";
 import { GlobalParser } from "./siunitx";
 
 function convertToScientific(num:INumberPiece, options: INumPostOptions) : void {
@@ -193,7 +194,12 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 			} else {
 				num.fractional = '';
 				num.decimal = '';
+				const addZeros = num.whole.length - roundingResult.length;
 				num.whole = roundingResult;
+				for (let i = 0; i<addZeros;i++){  
+					num.whole += '0';  	// This adds zeros to whole numbers when rounding in the mantissa. 
+										// But should we instead convert to scientific and leave the zeros off?
+				}
 			}	
 
 		} else if (combined.length < options.roundPrecision && options.roundPad) {
@@ -212,7 +218,79 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 	// only round if uncertainty included
 	if (num.uncertainty.length > 0){
+		// just in case convert uncertainty to bracket form... easier to round
+		num.uncertainty.forEach(uncertainty=>{
+			if (uncertainty.type == 'pm') {
+				//easiest way is to convert to a number and check if less than zero
+				const strNum = uncertainty.whole + uncertainty.decimal + uncertainty.fractional;
+				const num = +(strNum);
+				// if less than 1 (just a fraction), then remove leading zeros.  Else leave it as is.
+				if (num < 1) {
+					let position=0;
+					for (let i=0; i<uncertainty.fractional.length;i++){
+						if (uncertainty.fractional[i] != '0'){
+							break;
+						}
+						position++;
+					}
+					uncertainty.whole = uncertainty.fractional.slice(position, uncertainty.fractional.length);
+					uncertainty.decimal = '';
+					uncertainty.fractional = '';
+				}
+			}
+		});
+		// should all uncertainties have same precision? ... no, so round to smallest
+		let smallest = 999;
+		num.uncertainty.forEach(uncertainty =>{
+			smallest = Math.min(uncertainty.whole.length, smallest);
+
+			
+			if (uncertainty.whole.length - options.roundPrecision > 0){
+				const firstDrop = +uncertainty.whole.slice(options.roundPrecision, options.roundPrecision+1);
+				const toRound = +uncertainty.whole.slice(options.roundPrecision - 1, options.roundPrecision);
+				
+				if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+					uncertainty.whole = roundUp(uncertainty.whole, options.roundPrecision - 1, options);
+				} else {
+					uncertainty.whole = uncertainty.whole.slice(0, options.roundPrecision);
+				}		
+			}
+		});
 		
+		const mainRemove = smallest - options.roundPrecision;
+
+		if (mainRemove > 0){
+			const combined = num.whole + num.fractional;
+			const precision = combined.length - mainRemove;
+			const firstDrop = +combined.slice(precision, precision+1);
+			const toRound = +combined.slice(precision - 1, precision);
+			
+			let roundingResult;
+			// round up or down
+			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+				roundingResult = roundUp(combined, precision - 1, options);
+			} else {
+				roundingResult = combined.slice(0, precision);
+			}
+			// split the result back into whole and fractional parts
+			if (roundingResult.length >= num.whole.length){
+				num.fractional = roundingResult.slice(num.whole.length, roundingResult.length);
+			} else {
+				num.fractional = '';
+				num.decimal = '';
+				const addZeros = num.whole.length - roundingResult.length;
+				num.whole = roundingResult;
+				for (let i = 0; i<addZeros;i++){  
+					num.whole += '0';  	// This adds zeros to whole numbers when rounding in the mantissa. 
+										// But should we instead convert to scientific and leave the zeros off?
+				}
+			}	
+		} 
+
+		// padding doesn't make sense with uncertainties, skip it.
+
+
+
 	}
 }
 
