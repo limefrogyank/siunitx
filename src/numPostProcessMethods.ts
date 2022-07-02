@@ -145,38 +145,75 @@ function roundUp(fullNumber:string, position:number, options:INumPostOptions):st
 }
 
 function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
-	if (num.fractional.length > options.roundPrecision) {
-		console.log('rounding!');
-		console.log(num.whole + num.decimal + num.fractional);
-		const firstDrop = +num.fractional.slice(options.roundPrecision, options.roundPrecision+1);
-		const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
-		console.log(firstDrop);
-		console.log(toRound);
-		if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
-			const result = roundUp(num.whole + num.fractional, num.whole.length + options.roundPrecision - 1, options);
-			console.log(result);
-			const wholeLength = num.whole.length;
-			num.whole = result.slice(0,wholeLength);
-			num.fractional = result.slice(wholeLength, result.length);
-		} else {
-			num.fractional = num.fractional.slice(0, options.roundPrecision);
-		}
+	// if uncertainty exists, no rounding at all!
+	if (num.uncertainty.length == 0) {
+		if (num.fractional.length > options.roundPrecision ) {			
+			//console.log(num.whole + num.decimal + num.fractional);
+			const firstDrop = +num.fractional.slice(options.roundPrecision, options.roundPrecision+1);
+			const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
+			
+			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+				const result = roundUp(num.whole + num.fractional, num.whole.length + options.roundPrecision - 1, options);
+				const wholeLength = num.whole.length;
+				num.whole = result.slice(0,wholeLength);
+				num.fractional = result.slice(wholeLength, result.length);
+			} else {
+				num.fractional = num.fractional.slice(0, options.roundPrecision);
+			}		
 
-	} else if (num.fractional.length < options.roundPrecision && options.roundPad) {
-		for (var i = 0; i < options.roundPrecision-num.fractional.length; i++){
-			num.fractional += '0';  // pad with zeros
+		} else if (num.fractional.length < options.roundPrecision && options.roundPad) {
+			for (var i = 0; i < options.roundPrecision-num.fractional.length; i++){
+				num.fractional += '0';  // pad with zeros
+			}
+		} else {
+			//no rounding needed.
 		}
-	} else {
-		//no rounding needed.
 	}
 }
 
 function roundFigures(num:INumberPiece, options: INumPostOptions):void{
+	// if uncertainty exists, no rounding at all!
+	if (num.uncertainty.length == 0) {
+		const combined = num.whole + num.fractional;
+		if (combined.length > options.roundPrecision ) {			
+			//console.log(num.whole + num.decimal + num.fractional);
+			const firstDrop = +combined.slice(options.roundPrecision, options.roundPrecision+1);
+			const toRound = +combined.slice(options.roundPrecision - 1, options.roundPrecision);
+			
+			let roundingResult;
+			// round up or down
+			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+				roundingResult = roundUp(combined, options.roundPrecision - 1, options);
+			} else {
+				roundingResult = combined.slice(0, options.roundPrecision);
+			}
+			// split the result back into whole and fractional parts
+			if (roundingResult.length >= num.whole.length){
+				num.fractional = roundingResult.slice(num.whole.length, roundingResult.length);
+			} else {
+				num.fractional = '';
+				num.decimal = '';
+				num.whole = roundingResult;
+			}	
 
+		} else if (combined.length < options.roundPrecision && options.roundPad) {
+			
+			for (var i = 0; i < options.roundPrecision-combined.length; i++){
+				num.fractional += '0';  // pad with zeros, it's only going to go in the fractional part
+				if (num.decimal == '') num.decimal = '.';
+			}
+
+		} else {
+			//no rounding needed.
+		}
+	}
 }
 
 function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
-
+	// only round if uncertainty included
+	if (num.uncertainty.length > 0){
+		
+	}
 }
 
 const roundModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
