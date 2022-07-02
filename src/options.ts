@@ -28,8 +28,8 @@ export interface IUnitOptions {
 }
 
 export interface INumParseOptions{
-	evaluateExpression: boolean;
-	expression: string;
+	evaluateExpression: boolean;			// not implemented
+	expression: string;						// not implemented
 	inputCloseUncertainty: string;
 	inputComparators: string;
 	inputDecimalMarkers: string;
@@ -213,9 +213,8 @@ function camelCase(input: string) {
 function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
     const options : IOptions = {...defaultOptions};//{...UnitOptionDefaults};
 	if (optionString != null){
-		console.log(optionString);
+		
 		const optionArray = optionString.split(/,(?!\}|$)/g); // needed so that 'output-decimal-marker = {,}' parses with comma as value
-		console.log(optionArray);
 		optionArray.forEach((v,i,a)=> {
 //			console.log(v);
 			let args = v.split('=');
@@ -241,13 +240,12 @@ function processOptions(defaultOptions: IOptions, optionString: string) : IOptio
 
 export function processOptions2(defaultOptions: IOptions, optionString: string) : IOptions {
 	const options : IOptions = {...defaultOptions};
-	console.log(optionString);
+
 	if (optionString != null){
 		// check if wrapped in curly braces and remove them
 		while (optionString.startsWith('{') && optionString.endsWith('}')){
 			optionString = optionString.slice(1, optionString.length-1);
 		}
-		console.log(optionString);
 		let prop = '';
 		let onValue=false;
 		let depth = 0;
@@ -280,7 +278,7 @@ export function processOptions2(defaultOptions: IOptions, optionString: string) 
 			}
 			else if (c == ',' && depth == 0 && !escaped){
 				prop = camelCase(prop.trim());
-				console.log(prop + ': ' + value);
+				//console.log(prop + ': ' + value);
 				if (value == ''){
 					options[prop] = true;
 				}
@@ -310,7 +308,7 @@ export function processOptions2(defaultOptions: IOptions, optionString: string) 
 		}
 
 		prop = camelCase(prop.trim());
-		console.log(prop + ': ' + value);
+		//console.log(prop + ': ' + value);
 		if (value == ''){
 			options[prop] = true;
 		}
@@ -322,6 +320,6 @@ export function processOptions2(defaultOptions: IOptions, optionString: string) 
 			options[prop] = value.trim();
 		}
 	}
-	console.log(options);
+
 	return options;
 }

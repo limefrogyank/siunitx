@@ -139,10 +139,10 @@ function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string 
 			output += '(';
 		}
 	} else {
-		if (options.printImplicitPlus && (piece.sign == '+' || piece.sign == '')){
+		if (options.printImplicitPlus && piece.sign == ''){
 			output += '+';
 		} else {
-			output += piece.sign == '+' ? '' : piece.sign;
+			output += piece.sign;
 		}
 	}
 
@@ -208,7 +208,7 @@ function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string 
 	if (options.negativeColor != '') {
 		output += '}';
 	}
-	console.log(output);
+
 	return output;
 }
 

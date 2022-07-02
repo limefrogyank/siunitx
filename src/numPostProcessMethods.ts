@@ -128,8 +128,6 @@ function roundUp(fullNumber:string, position:number, options:INumPostOptions):st
 	let reverseNumArr = new Array<number>();
 	let digit = +fullNumber[position] + 1;
 	let roundedNine = digit == 0 ? true : false;
-	console.log(fullNumber);
-	console.log(position);
 	reverseNumArr.push(digit); 
 	for (let i=position-1; i >= 0; i--) {
 		if (roundedNine){
@@ -141,7 +139,6 @@ function roundUp(fullNumber:string, position:number, options:INumPostOptions):st
 			reverseNumArr.push(digit);
 		}
 	}
-	console.log(reverseNumArr);
 	reverseNumArr.reverse();
 	reverseNumArr.forEach(v=> result+=v);
 	return result;
@@ -171,6 +168,9 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 		} else {
 			//no rounding needed.
 		}
+
+		afterRoundZeroOptions(num, options);
+
 	}
 }
 
@@ -214,7 +214,9 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 		} else {
 			//no rounding needed.
 		}
-	}
+
+		afterRoundZeroOptions(num, options);
+	}	
 }
 
 function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
@@ -294,6 +296,27 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 	}
 }
 
+function afterRoundZeroOptions(num:INumberPiece, options: INumPostOptions){
+	// check if zero, then do stuff
+	const current = Math.abs(+(num.whole + num.decimal + num.fractional + (num.exponentMarker != '' ? 'e' : '') + num.exponentSign + num.exponent));
+	if (current == 0) {
+		if (options.roundMinimum != '0'){
+			num.prefix = '\\lt'; 
+			const minimumNum = parseNumber(GlobalParser, options.roundMinimum, <INumOptions>options);
+			num.sign = minimumNum.sign;
+			num.whole = minimumNum.whole;
+			num.decimal = minimumNum.decimal;
+			num.fractional = minimumNum.fractional;
+			num.exponentMarker = minimumNum.exponentMarker;
+			num.exponentSign = minimumNum.exponentSign;
+			num.exponent = minimumNum.exponent;
+			
+		} else if (options.roundZeroPositive){
+			num.sign = '';
+		}
+	}
+}
+
 const roundModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
 	['none', (num:INumberPiece, options: INumPostOptions):void =>{}],
 	['places', roundPlaces],
@@ -314,24 +337,7 @@ export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
 
 	roundModeMap.get(options.roundMode)(num, options);
 	
-	// check if zero, then do stuff
-	const current = Math.abs(+(num.whole + num.decimal + num.fractional + (num.exponentMarker != '' ? 'e' : '') + num.exponentSign + num.exponent));
-	if (current == 0) {
-		if (options.roundMinimum != '0'){
-			num.prefix = '\\lt'; 
-			const minimumNum = parseNumber(GlobalParser, options.roundMinimum, <INumOptions>options);
-			num.sign = minimumNum.sign;
-			num.whole = minimumNum.whole;
-			num.decimal = minimumNum.decimal;
-			num.fractional = minimumNum.fractional;
-			num.exponentMarker = minimumNum.exponentMarker;
-			num.exponentSign = minimumNum.exponentSign;
-			num.exponent = minimumNum.exponent;
-			
-		} else if (options.roundZeroPositive){
-			num.sign = '';
-		}
-	}
+	
 
 	if (options.dropZeroDecimal && +(num.fractional) == 0){
 		num.fractional = '';

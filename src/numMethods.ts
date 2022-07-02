@@ -191,7 +191,6 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 		text = text.replace('<=','\\le');
 		text = text.replace('>=','\\ge');
 		text = text.replace('+-','\\pm');
-		//console.log(text);
 
 		const num : INumberPiece = generateNumberPiece();
 
@@ -224,16 +223,14 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 					if (char != '\\' && char != ' '){
 						macro += char;
 					}
-					//console.log(macro);
 					subParser.i++;
 				}
-				//console.log('tryeing to find:  ' + macro);
+
 				if (mapping.has(macro)){
 					const func = mapping.get(macro);
 					if (typeof func == 'function'){
 						(mapping.get(macro) as CharFunction)(macro, num);
 					} else {
-						//console.log(typeof func);
 						if (num.whole =='' && num.decimal == ''){
 							(func as Map<string,CharFunction>).get('inputSigns')(macro, num);
 						} else {
@@ -244,13 +241,38 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 			}
 			
 		}
-		//console.log(num);
+
+		if (!options.retainExplicitDecimalMarker && num.decimal != '' && num.fractional == ''){
+			num.decimal = '';
+		}
+		if (!options.retainExplicitPlus && num.sign == '+'){
+			num.sign = '';
+		}
+		const value = +(num.whole + (num.decimal != '' ? '.' : '') + num.fractional);
+		if (value == 0 && !options.retainNegativeZero && num.sign == '-'){
+			num.sign = '';
+		}
+
+		if (!options.retainZeroUncertainty){
+			for (let i= num.uncertainty.length-1; i>=0; i--){
+				const uncertaintyValue = +(num.uncertainty[i].whole + (num.uncertainty[i].decimal != '' ? '.' : '') + num.uncertainty[i].fractional);
+				if (uncertaintyValue == 0){
+					num.uncertainty.splice(i,1);
+				}
+			}
+		}
+
 		return num;
 }
 
 export function processNumber(parser:TexParser, text:string, options: INumOptions): MmlNode{
 	
 	if (options.parseNumbers){
+
+		// going to assume evaluate expression is processed first, THEN the result is parsed normally
+		if (options.evaluateExpression){
+			// TO-DO (BIG ONE)
+		}
 
 		const num = parseNumber(parser,text,options);
 

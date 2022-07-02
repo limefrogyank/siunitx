@@ -51,6 +51,19 @@ MathJax = {
 		String.raw`\num{12.3 +- 6}`,
 		String.raw`\num{123.4(12)}`,
 		String.raw`\num{123.4(1.2)}`,
+		String.raw`\num{123.4(12)(45)}`,
+		String.raw`\num{123.4 \pm 1.2 \pm 4.5}`,
+		String.raw`\num[parse-numbers = false]{\sqrt{2}}`,
+
+		String.raw`\num{10.}`,
+		String.raw`\num[retain-explicit-decimal-marker]{10.}`,
+		String.raw`\num{+345}`,
+		String.raw`\num[retain-explicit-plus]{+345}`,
+		String.raw`\num{-0}`,
+		String.raw`\num[retain-negative-zero]{-0}`,
+		String.raw`\num{12.3(0)}`,
+		String.raw`\num[retain-zero-uncertainty]{12.3(0)}`,
+
 
 		// postprocess demo
 		String.raw`\num{0.001}`,
