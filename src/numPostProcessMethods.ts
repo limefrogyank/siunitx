@@ -101,7 +101,104 @@ const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOpti
 	['scientific', convertToScientific]
 ]);
 
+function shouldRoundUp(toRound:number, firstDrop:number, roundEven:boolean):boolean{
+	let result = false;
+	if (firstDrop > 5){
+		result = true;	
+	} else if (firstDrop == 5) {
+		if (roundEven){
+			if (toRound % 2 == 0){
+				result = false;
+			} else {
+				result = true;
+			}
+		} else {
+			result = true;
+		}
+	}
+
+	return result;
+}
+
+function roundUp(fullNumber:string, position:number, options:INumPostOptions):string{
+	let result = '';
+	let reverseNumArr = new Array<number>();
+	let digit = +fullNumber[position] + 1;
+	let roundedNine = digit == 0 ? true : false;
+	console.log(fullNumber);
+	console.log(position);
+	reverseNumArr.push(digit); 
+	for (let i=position-1; i >= 0; i--) {
+		if (roundedNine){
+			digit = +fullNumber[i] + 1;
+			roundedNine = digit == 0 ? true : false;
+			reverseNumArr.push(digit);
+		} else {
+			digit = +fullNumber[i];
+			reverseNumArr.push(digit);
+		}
+	}
+	console.log(reverseNumArr);
+	reverseNumArr.reverse();
+	reverseNumArr.forEach(v=> result+=v);
+	return result;
+}
+
+function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
+	if (num.fractional.length > options.roundPrecision) {
+		console.log('rounding!');
+		console.log(num.whole + num.decimal + num.fractional);
+		const firstDrop = +num.fractional.slice(options.roundPrecision, options.roundPrecision+1);
+		const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
+		console.log(firstDrop);
+		console.log(toRound);
+		if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
+			const result = roundUp(num.whole + num.fractional, num.whole.length + options.roundPrecision - 1, options);
+			console.log(result);
+			const wholeLength = num.whole.length;
+			num.whole = result.slice(0,wholeLength);
+			num.fractional = result.slice(wholeLength, result.length);
+		} else {
+			num.fractional = num.fractional.slice(0, options.roundPrecision);
+		}
+
+	} else if (num.fractional.length < options.roundPrecision && options.roundPad) {
+		for (var i = 0; i < options.roundPrecision-num.fractional.length; i++){
+			num.fractional += '0';  // pad with zeros
+		}
+	} else {
+		//no rounding needed.
+	}
+}
+
+function roundFigures(num:INumberPiece, options: INumPostOptions):void{
+
+}
+
+function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
+
+}
+
+const roundModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
+	['none', (num:INumberPiece, options: INumPostOptions):void =>{}],
+	['places', roundPlaces],
+	['figures', roundFigures],
+	['uncertainty', roundUncertainty]
+]);
+
 export function postProcessNumber(num:INumberPiece, options: INumPostOptions){
+	
+	if (options.dropUncertainty){
+		num.uncertainty.splice(0, num.uncertainty.length);
+	}
+	if (options.dropExponent){
+		num.exponentMarker = '';
+		num.exponentSign = '';
+		num.exponent = '';
+	}
+
+	roundModeMap.get(options.roundMode)(num, options);
+	
 	exponentModeMap.get(options.exponentMode)(num, options);
 
 

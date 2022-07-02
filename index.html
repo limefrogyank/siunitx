@@ -35,6 +35,7 @@ MathJax = {
 
 <script>
 	var num = [
+
 		String.raw`\num{1234}`,
 		String.raw`\num{12345}`,
 		String.raw`\num{0.123}`,
@@ -51,6 +52,7 @@ MathJax = {
 		String.raw`\num{123.4(12)}`,
 		String.raw`\num{123.4(1.2)}`,
 
+		// postprocess demo
 		String.raw`\num{0.001}`,
 		String.raw`\num{0.0100}`,
 		String.raw`\num{1200}`,
@@ -65,7 +67,23 @@ MathJax = {
 		String.raw`\num[exponent-mode = fixed, fixed-exponent=2]{1200}`,
 		String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{0.0100}`,
 		String.raw`\num[exponent-mode = fixed, fixed-exponent=0]{1.00e-2}`,
-		String.raw``,
+		String.raw`\num{0.01(2)}`,
+		String.raw`\num[drop-uncertainty]{0.01(2)}`,
+		String.raw`\num{0.01e3}`,
+		String.raw`\num[drop-exponent]{0.01e3}`,
+		//rounding
+		String.raw`\num{1.23456}`,
+		String.raw`\num{14.23}`,
+		String.raw`\num{0.12345(9)}`,
+		String.raw`\num[round-mode = places, round-precision = 3]{1.23456}`,
+		String.raw`\num[round-mode = places, round-precision = 3]{14.23}`,
+		String.raw`\num[round-mode = places, round-precision = 3]{0.12345(9)}`,
+		String.raw`\num[round-mode = figures, round-precision = 3]{1.23456}`,
+		String.raw`\num[round-mode = figures, round-precision = 3]{14.23}`,
+		String.raw`\num[round-mode = figures, round-precision = 3]{0.12345(9)}`,
+		String.raw`\num[round-mode = uncertainty, round-precision = 1]{0.12345(9)}`,
+		String.raw`\num[round-mode = uncertainty, round-precision = 1]{0.12345(23)}`,
+		String.raw`\num[round-mode = uncertainty, round-precision = 1]{0.12345(234)}`,
 		String.raw``,
 		String.raw``,
 		String.raw``,
