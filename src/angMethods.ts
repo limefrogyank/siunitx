@@ -234,7 +234,6 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 		}
 	} 
 
-	console.log(displayResult);
 	return displayResult;
 }
 
@@ -245,12 +244,10 @@ export function processAngle(parser:TexParser, text:string, options: IAngleOptio
 
 	// consider error checking result
 	// Is there an exponent??  Maybe throw an error.
-
 	
 	// transform angle format
 	modeMapping.get(options.angleMode)(ang, options);
-	console.log(ang);
-
+	
 	const displayResult = displayAngle(ang, options);
 
 	const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
