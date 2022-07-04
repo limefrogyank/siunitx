@@ -2,9 +2,9 @@ import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { IUnitOptions, QualifierMode } from "./options";
-import { prefixSymbol, unitSymbol } from "./units";
+import { prefixSymbol, unitSymbol, unitSymbolsWithShortcuts } from "./units";
 
-interface IUnitPiece {
+export interface IUnitPiece {
 	symbol?:string;
 	prefix?:string;
 	position?: 'numerator' | 'denominator', // used as an override for power.  i.e. can make power negative if denominator.
@@ -43,8 +43,14 @@ function processUnitMacro(macro:string, parser:TexParser) : IUnitMacroProcessRes
 		return {type: 'prefix', result: {prefix: prefixSymbol.get(macro)}};
 	}
 
-	if (unitSymbol.has(macro)){
-		return {type: 'unit', result: {symbol: unitSymbol.get(macro), prefix: ''}};
+	if (unitSymbolsWithShortcuts.has(macro)){
+		const result = unitSymbolsWithShortcuts.get(macro);
+		//if (typeof(result) === 'string'){
+			return {type: 'unit', result: {symbol: result as string, prefix: ''}};
+		//} else {
+		//	return {type: 'piece', result: result };
+		//}
+		
 	}
 
 	return {type: 'unit', result: {symbol: 'X', prefix: ''}};

@@ -1,6 +1,7 @@
 import { TwoWayMap } from "./twoWayMap";
+import { IUnitPiece } from "./unitMethods";
 
-export const prefixSymbol: TwoWayMap<string,string> = new TwoWayMap<string,string>(new Map<string,string>([
+export const prefixSymbol = new Map<string,string>([
 	['yotta','Y'],
 	['zetta','Z'],
 	['exa','E'],
@@ -31,9 +32,10 @@ export const prefixSymbol: TwoWayMap<string,string> = new TwoWayMap<string,strin
 	['exbi','Ei'],
 	['zebi','Zi'],
 	['yobi','Yi'],
-]));
+]);
 
-export const unitSymbol : TwoWayMap<string, string> = new TwoWayMap<string,string>(new Map<string,string>([
+// These are separate from the shortcuts so we can parse literal strings that contain units.
+export const unitSymbol = new Map<string,string>([
 	['meter','m'],
 	['metre','m'],
 	['gram','g'],
@@ -81,8 +83,11 @@ export const unitSymbol : TwoWayMap<string, string> = new TwoWayMap<string,strin
 	['minute', 'min'],
 	['arcsecond', "''"],
 	['neper', 'Np'],
-	['tonne', 't'],
+	['tonne', 't']
+]);
 
+export const unitSymbolsWithShortcuts = new Map<string, string>([
+	...unitSymbol,
 	['fg', 'fg'],
 	['pg', 'pg'],
 	['ng', 'ng'],
@@ -180,7 +185,7 @@ export const unitSymbol : TwoWayMap<string, string> = new TwoWayMap<string,strin
 	['GeV', 'GeV'],
 	['TeV', 'TeV'],
 
-	['kWh', 'kWh'],  // possible wrong formatting
+	['kWh', 'kW\\, h'],  // possible wrong formatting
 
 	['F', 'F'],
 	['fF', 'fF'],
@@ -207,5 +212,5 @@ export const unitSymbol : TwoWayMap<string, string> = new TwoWayMap<string,strin
 	['bit', 'b'],
 
 	['byte', 'B'],
-]));
+]);
 
