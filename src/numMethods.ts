@@ -3,7 +3,7 @@ import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { displayOutput } from "./numDisplayMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
-import { INumOptions, INumParseOptions } from "./options";
+import { INumOptions, INumParseOptions, IOptions, processOptions } from "./options";
 
 
 
@@ -265,8 +265,11 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 		return num;
 }
 
-export function processNumber(parser:TexParser, text:string, options: INumOptions): MmlNode{
+export function processNumber(parser:TexParser, text:string, localOptions: string): MmlNode{
 	
+	let globalOptions: IOptions = {...parser.options as IOptions};
+	let options = processOptions(globalOptions, localOptions);
+
 	if (options.parseNumbers){
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally

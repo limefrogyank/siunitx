@@ -239,36 +239,7 @@ function camelCase(input: string) {
     });
 }
 
-// deprecated
-function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
-    const options : IOptions = {...defaultOptions};//{...UnitOptionDefaults};
-	if (optionString != null){
-		
-		const optionArray = optionString.split(/,(?!\}|$)/g); // needed so that 'output-decimal-marker = {,}' parses with comma as value
-		optionArray.forEach((v,i,a)=> {
-//			console.log(v);
-			let args = v.split('=');
-//			console.log(args);
-			let prop = camelCase(args[0].trim());
-			if (args.length > 1){
-				if ( typeof options[prop] === 'number' ){
-					options[prop] = +(args[1].trim());
-				} else if (typeof options[prop] === 'boolean') {
-					options[prop] = (args[1].trim() === 'true');
-				} else {
-					options[prop] = args[1].trim();
-				}
-			} else {
-				options[prop] = true;
-			}
-		
-		});
-	}
-	//console.log(options);
-    return options;
-}
-
-export function processOptions2(defaultOptions: IOptions, optionString: string) : IOptions {
+export function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
 	const options : IOptions = {...defaultOptions};
 
 	if (optionString != null){

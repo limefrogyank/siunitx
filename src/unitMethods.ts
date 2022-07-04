@@ -1,7 +1,9 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { IUnitOptions, QualifierMode } from "./options";
+import { siunitxError } from "./errors";
+import { IOptions, IUnitOptions, processOptions, QualifierMode } from "./options";
+import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";
 import { prefixSymbol, unitSymbol, unitSymbolsWithShortcuts } from "./units";
 
 export interface IUnitPiece {
@@ -18,6 +20,7 @@ export interface IUnitPiece {
 interface IUnitMacroProcessResult {
 	type: 'prefix' | 'unit' | 'previous' | 'next';  // either a prefix, unit, or modifier for previous or next unit
 	result: IUnitPiece;
+	options?: string;
 }
 
 const modifierMacros: Array<string> = new Array<string>(
@@ -43,18 +46,20 @@ function processUnitMacro(macro:string, parser:TexParser) : IUnitMacroProcessRes
 		return {type: 'prefix', result: {prefix: prefixSymbol.get(macro)}};
 	}
 
-	if (unitSymbolsWithShortcuts.has(macro)){
-		const result = unitSymbolsWithShortcuts.get(macro);
-		//if (typeof(result) === 'string'){
-			return {type: 'unit', result: {symbol: result as string, prefix: ''}};
-		//} else {
-		//	return {type: 'piece', result: result };
-		//}
-		
+	const userDefinedUnits = parser.configuration.packageData.get(UserDefinedUnitsKey) as Map<string, string>;
+	if (userDefinedUnits.has('\\' + macro)){
+		const result = userDefinedUnits.get('\\' + macro);
+		const userDefinedUnitOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey) as Map<string, string>;
+		const options = userDefinedUnitOptions.get('\\' + macro);
+		return {type: 'unit', result: {symbol: result as string, prefix: ''}, options: options};
 	}
 
-	return {type: 'unit', result: {symbol: 'X', prefix: ''}};
+	if (unitSymbolsWithShortcuts.has(macro)){
+		const result = unitSymbolsWithShortcuts.get(macro);
+		return {type: 'unit', result: {symbol: result as string, prefix: ''}};
+	}
 
+	throw siunitxError.NoInterpretationForUnitMacro('\\' + macro);
 }
 
 const modifierMacroMap = new Map<string, (macro:string, parser:TexParser)=>IUnitMacroProcessResult>([
@@ -220,10 +225,10 @@ function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: I
 	return mml;
 }
 
-export function parseUnit(parser: TexParser, text:string, options: IUnitOptions): MmlNode {
+export function parseUnit(parser: TexParser, text:string, options: string): MmlNode {
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
-
+	let globalOptions: IOptions = {...parser.options as IOptions};
 	// argument contains either macros or it's just plain text
 	if (text.indexOf('\\') != -1){
 		const subParser = new TexParser(text, parser.stack.env, parser.configuration)
@@ -232,6 +237,13 @@ export function parseUnit(parser: TexParser, text:string, options: IUnitOptions)
 		while (subParser.i < subParser.string.length){
 			const macro = subParser.GetArgument(null);
 			const processedMacro = processUnitMacro(macro, subParser);
+			// check for user defined options
+			if (processedMacro.options !== undefined){
+				globalOptions = processOptions(globalOptions, processedMacro.options);
+			}
+			// apply immediate options here
+			globalOptions = processOptions(globalOptions, options);
+			
 			switch (processedMacro.type){
 				case 'next':
 				case 'prefix':
@@ -251,7 +263,7 @@ export function parseUnit(parser: TexParser, text:string, options: IUnitOptions)
 				case 'unit':
 					if (nextModifier != null){
 						processedMacro.result = Object.assign(processedMacro.result, nextModifier);
-						if (options.perMode == 'repeated-symbol'){
+						if (globalOptions.perMode == 'repeated-symbol'){
 							let denom = nextModifier.position == 'denominator';
 							nextModifier = null;
 							if (denom){
@@ -270,7 +282,7 @@ export function parseUnit(parser: TexParser, text:string, options: IUnitOptions)
 		unitPieces.push(...parsePlainTextUnits(parser, text));
 	}
 
-	const mml = displayUnits(parser, unitPieces, options);
+	const mml = displayUnits(parser, unitPieces, globalOptions);
 	
 	return mml;
 }

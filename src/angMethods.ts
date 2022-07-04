@@ -4,7 +4,7 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./errors";
 import { displayNumber } from "./numDisplayMethods";
 import { CharNumFunction, generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
-import { IAngleOptions, IOptions } from "./options";
+import { IAngleOptions, IOptions, processOptions } from "./options";
 
 interface IAnglePiece {
 	degrees: INumberPiece;
@@ -244,8 +244,10 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 }
 
 
-export function processAngle(parser:TexParser, text:string, options: IAngleOptions):MmlNode {
+export function processAngle(parser:TexParser, text:string, localOptions: string):MmlNode {
 
+	let globalOptions: IOptions = {...parser.options as IOptions};
+	let options = processOptions(globalOptions, localOptions);
 	const ang = parseAngle(parser, text, options);
 
 	// consider error checking result

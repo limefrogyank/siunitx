@@ -8,8 +8,10 @@ MathJax = {
 	},
 	tex: {
 		packages: {'[+]': ['siunitx', 'gensymb']},
+		inlineMath: {'[+]': [['$', '$']]}
 		/* global options go here, see IOptions for properties */
-		displayPerMode: 'fraction'
+		// Uncomment example below: 
+		// perMode: 'fraction'
 	}
 };
 </script>
@@ -26,6 +28,14 @@ MathJax = {
 			border: 1px solid;
 		}
 	</style>
+
+$ \DeclareSIUnit[inter-unit-product = \times]{\hello}{killunit} $
+$ \DeclareSIUnit{\hellow}{\mathrm{smiley2!}} $
+
+	$$ \unit{\hello\kg\second} $$
+	$$ \unit[inter-unit-product = \,]{\hello\kg\second} $$
+
+	$$ \unit{\hellow\kg\second} $$
 
 <h2>Ang</h2>
 <table id="angTable" class="tableStyle"></table>

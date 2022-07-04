@@ -1,5 +1,5 @@
-import { TwoWayMap } from "./twoWayMap";
-import { IUnitPiece } from "./unitMethods";
+export const userDefinedUnits = new Map<string,string>();
+export const userDefinedUnitOptions = new Map<string,string>();
 
 export const prefixSymbol = new Map<string,string>([
 	['yotta','Y'],
