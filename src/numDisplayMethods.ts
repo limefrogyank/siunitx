@@ -129,8 +129,10 @@ const uncertaintyModeMapping = new Map<string, ( uncertainty:IUncertainty, value
 ])
 
 
-function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string {
+export function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string {
 	let output = '';
+	groupNumbersMap.get(options.groupDigits)(piece, options);	
+
 	if (options.negativeColor != '') {
 		output += '{\\color{' + options.negativeColor + '}';
 	}
@@ -214,7 +216,6 @@ function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string 
 
 export function displayOutput(num:INumberPiece, options: INumOutputOptions):string{
 
-	groupNumbersMap.get(options.groupDigits)(num, options);
 	let output = '';
 	
 	// display any prefix symbol such as less than, greater than, etc.

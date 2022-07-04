@@ -3,8 +3,9 @@ import { Configuration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexError from 'mathjax-full/js/input/tex/TexError';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
+import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
-import { findOptions, IOptions, IUnitOptions, NumOptionDefaults, processOptions2, UnitOptionDefaults } from './options';
+import { AngleOptionDefaults, findOptions, IOptions, IUnitOptions, NumOptionDefaults, processOptions2, UnitOptionDefaults } from './options';
 import { parseUnit } from './unitMethods';
 
 
@@ -20,12 +21,6 @@ var ALLOWED = {
 };
 
 
-function parseAngle(parser:TexParser, text:string):MmlNode {
-    var node = parser.create('node', 'mtext');
-    var inner = parser.create('text', text + " testAngle");
-    node.appendChild(inner);
-    return node;
-}
 
 const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOptions )=>MmlNode>([
     ['\\num', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
@@ -33,7 +28,7 @@ const methodMap = new Map<string, (parser: TexParser,name:string, options?:IOpti
         return node;
     }],
     ['\\ang', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
-        const node = parseAngle(parser, parser.GetArgument(name));
+        const node = processAngle(parser, parser.GetArgument(name), options);
         return node;
     }],
     ['\\unit', (parser: TexParser,name:string, options?:IOptions ):MmlNode =>{ 
@@ -87,4 +82,10 @@ function isDisplay(node: MmlNode): boolean {
   }
 
 
-var siunitxConfiguration = Configuration.create('siunitx', { handler: { macro: ['siunitxMap'] }, options: {...UnitOptionDefaults, ...NumOptionDefaults} });
+var siunitxConfiguration = Configuration.create('siunitx', 
+{ 
+    handler: { 
+        macro: ['siunitxMap'] 
+    }, 
+    options: {...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults} 
+});

@@ -3,11 +3,11 @@
 <script>
 MathJax = {
 	loader: {
-		load: ['[custom]/siunitx.js'],
+		load: ['[custom]/siunitx.js', '[tex]/gensymb'],
 		paths: {custom: '.'}
 	},
 	tex: {
-		packages: {'[+]': ['siunitx']},
+		packages: {'[+]': ['siunitx', 'gensymb']},
 		/* global options go here, see IOptions for properties */
 		displayPerMode: 'fraction'
 	}
@@ -26,6 +26,11 @@ MathJax = {
 			border: 1px solid;
 		}
 	</style>
+
+	$$  2\rlap{.}{\degree}22 $$
+
+<h2>Ang</h2>
+<table id="angTable" class="tableStyle"></table>
 
 <h2>Num</h2>
 <table id="numTable" class="tableStyle"></table>
@@ -165,6 +170,48 @@ MathJax = {
 		td.innerText = "$$ " + num[i] + " $$";
 		tr.appendChild(td);
 	}
+
+
+	var ang = [
+		String.raw`\ang{10}`,
+		String.raw`\ang{12.3}`,
+		String.raw`\ang{4,5}`,
+		String.raw`\ang{1;2;3}`,
+		String.raw`\ang{;;1}`,
+		String.raw`\ang{-0;1;}`,
+		String.raw`\ang{2.67}`,
+		String.raw`\ang{2;3;4}`,
+		String.raw`\ang[angle-mode = arc]{2.67}`,
+		String.raw`\ang[angle-mode = arc]{2;3;4}`,
+		String.raw`\ang[angle-mode = decimal]{2.67}`,
+		String.raw`\ang[angle-mode = decimal]{2;3;4}`,
+		String.raw`\ang{2.67}`,
+		String.raw`\ang[number-angle-product = \,]{2.67}`,
+		String.raw`\ang{6;7;6.5}`,
+		String.raw`\ang[angle-separator = \,]{6;7;6.5}`,
+
+		String.raw`\ang{45.697}`,
+		String.raw`\ang{6;7;6.5}`,
+		String.raw`\ang[angle-symbol-over-decimal]{45.697}`,
+		String.raw`\ang[angle-symbol-over-decimal]{6;7;6.5}`,
+		String.raw``,
+		String.raw``,
+		String.raw``,
+		String.raw``,
+];
+
+	var table = document.getElementById('angTable');
+	for (var i = 0; i<ang.length; i++){
+		var tr = document.createElement('tr');
+		table.appendChild(tr);
+		var td = document.createElement('td');
+		td.innerText = ang[i];
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.innerText = "$$ " + ang[i] + " $$";
+		tr.appendChild(td);
+	}
+
 
 	var unit = [
 		String.raw`\unit[per-mode=power]{\kilo\gram\per\second}`,

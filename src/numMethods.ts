@@ -24,7 +24,7 @@ export interface IUncertainty extends INumberPiece  {
 	completed: boolean; // mostly for uncertainty
 }
 
-declare type CharFunction = (text:string, numPiece: INumberPiece) => void;
+export declare type CharNumFunction = (text:string, numPiece: INumberPiece) => void;
 
 const NumberPieceDefault : INumberPiece = {
 	prefix: '',
@@ -44,7 +44,8 @@ const UncertaintyDefault: IUncertainty  = {
 	completed: false
 };
 
-function generateNumberPiece():INumberPiece{
+// Can't splat default otherwise array reference gets copied.  Need to construct it freshly.
+export function generateNumberPiece():INumberPiece{
 	const piece = {...NumberPieceDefault};
 	piece.uncertainty = new Array<IUncertainty>();
 	return piece;
@@ -138,8 +139,8 @@ function parseIgnore(text:string, numPiece: INumberPiece){
 }
 
 // using two types for output.  Ex.  \\pm is used both as sign and as an uncertainty.  Need map of map for this one.
-function generateMapping(options: INumParseOptions): Map<string, CharFunction | Map<string,CharFunction>>{
-	const parseMap = new Map<string,CharFunction | Map<string,CharFunction>>();
+export function generateNumberMapping(options: INumParseOptions): Map<string, CharNumFunction | Map<string,CharNumFunction>>{
+	const parseMap = new Map<string,CharNumFunction | Map<string,CharNumFunction>>();
 	//parseMap.set('\\', parseMacro);
 	let tempArray;
 	var matchMacrosOrChar = /[^\\\s]|(?:\\[^\\]*(?=\s|\\|$))/g;
@@ -163,8 +164,8 @@ function generateMapping(options: INumParseOptions): Map<string, CharFunction | 
 	}
 	while ((tempArray = matchMacrosOrChar.exec(options.inputUncertaintySigns)) !== null) {
 		if (parseMap.has(tempArray[0])){
-			const firstFunc = parseMap.get(tempArray[0]) as CharFunction;
-			const innerMap = new Map<string, CharFunction>();
+			const firstFunc = parseMap.get(tempArray[0]) as CharNumFunction;
+			const innerMap = new Map<string, CharNumFunction>();
 			innerMap.set('inputSigns', firstFunc);
 			innerMap.set('inputUncertaintySigns', parseUncertaintySigns);
 			parseMap.set(tempArray[0], innerMap);
@@ -185,7 +186,7 @@ function generateMapping(options: INumParseOptions): Map<string, CharFunction | 
 
 export function parseNumber(parser:TexParser, text:string, options: INumOptions) : INumberPiece {
 	
-		const mapping = generateMapping(options);
+		const mapping = generateNumberMapping(options);
 		text = text.replace('<<','\\ll');
 		text = text.replace('>>','\\gg');
 		text = text.replace('<=','\\le');
@@ -205,15 +206,14 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 				if (mapping.has(char)){
 					const func = mapping.get(char);
 					if (typeof func == 'function'){
-						(mapping.get(char) as CharFunction)(char, num);
+						(mapping.get(char) as CharNumFunction)(char, num);
 					} else {
 						if (num.whole =='' && num.decimal == ''){
-							(func as Map<string,CharFunction>).get('inputSigns')(char, num);
+							(func as Map<string,CharNumFunction>).get('inputSigns')(char, num);
 						} else {
-							(func as Map<string,CharFunction>).get('inputUncertaintySigns')(char, num);
+							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')(char, num);
 						}
-					}
-					
+					}					
 				}
 			} else {
 				let macro = char;
@@ -229,12 +229,12 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 				if (mapping.has(macro)){
 					const func = mapping.get(macro);
 					if (typeof func == 'function'){
-						(mapping.get(macro) as CharFunction)(macro, num);
+						(mapping.get(macro) as CharNumFunction)(macro, num);
 					} else {
 						if (num.whole =='' && num.decimal == ''){
-							(func as Map<string,CharFunction>).get('inputSigns')(macro, num);
+							(func as Map<string,CharNumFunction>).get('inputSigns')(macro, num);
 						} else {
-							(func as Map<string,CharFunction>).get('inputUncertaintySigns')(macro, num);
+							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')(macro, num);
 						}
 					}
 				}
