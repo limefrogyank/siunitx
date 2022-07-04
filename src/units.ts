@@ -1,13 +1,5 @@
 import { TwoWayMap } from "./twoWayMap";
 
-
-export const unitSymbol : TwoWayMap<string, string> = new TwoWayMap<string,string>(new Map<string,string>([
-	['meter','m'],
-	['metre','m'],
-	['gram','g'],
-	['second','s']
-]));
-
 export const prefixSymbol: TwoWayMap<string,string> = new TwoWayMap<string,string>(new Map<string,string>([
 	['yotta','Y'],
 	['zetta','Z'],
@@ -29,5 +21,191 @@ export const prefixSymbol: TwoWayMap<string,string> = new TwoWayMap<string,strin
 	['femto','f'],
 	['atto','a'],
 	['zepto','z'],
-	['yocto','y']
+	['yocto','y'],
+
+	['kibi','Ki'],
+	['mebi','Mi'],
+	['gibi','Gi'],
+	['tebi','Ti'],
+	['pebi','Pi'],
+	['exbi','Ei'],
+	['zebi','Zi'],
+	['yobi','Yi'],
 ]));
+
+export const unitSymbol : TwoWayMap<string, string> = new TwoWayMap<string,string>(new Map<string,string>([
+	['meter','m'],
+	['metre','m'],
+	['gram','g'],
+	['second','s'],
+	['ampere', 'A'],
+	['candela', 'cd'],
+	['kelvin', 'K'],
+	['kilogram', 'kg'],
+	['mole', 'mol'],
+
+	['becquerel', 'Bq'],
+	['degreeCelsius', '\\degree C'],
+	['farad', 'F'],
+	['gray', 'Gy'],
+	['hertz', 'Hz'],
+	['henry', 'H'],
+	['joule', 'J'],
+	['lumen', 'lm'],
+	['katal', 'kat'],
+	['lux', 'lx'],
+	['newton', 'N'],
+	['ohm', '\\ohm'],
+	['pascal','Pa'],
+	['radian', 'rad'],
+	['siemens', 'S'],
+	['sievert', 'Sv'],
+	['steradian', 'sr'],
+	['tesla', 'T'],
+	['volt', 'V'],
+	['watt', 'W'],
+	['weber', 'Wb'],
+
+	['astronomicalunit', 'au'],
+	['bel', 'B'],
+	['dalton', 'Da'],
+	['day', 'd'],
+	['decibel', 'dB'],
+	['degree', '\\degree'],
+	['electronvolt', 'eV'],
+	['hectare', 'ha'],
+	['hour', 'h'],
+	['litre', 'L'],
+	['liter', 'L'],
+	['arcminute', "'"],
+	['minute', 'min'],
+	['arcsecond', "''"],
+	['neper', 'Np'],
+	['tonne', 't'],
+
+	['fg', 'fg'],
+	['pg', 'pg'],
+	['ng', 'ng'],
+	['ug', '\\micro g'],
+	['mg', 'mg'],
+	['g', 'g'],
+	['kg', 'kg'],
+
+	['pm', 'pm'],
+	['nm', 'nm'],
+	['um', '\\micro m'],
+	['mm', 'mm'],
+	['cm', 'cm'],
+	['dm', 'dm'],
+	['m', 'm'],
+	['km', 'km'],
+
+	['as', 'as'],
+	['fs', 'fs'],
+	['ps', 'ps'],
+	['ns', 'ns'],
+	['us', '\\micro s'],
+	['ms', 'ms'],
+	['s', 's'],
+
+	['fmol', 'fmol'],
+	['pmol', 'pmol'],
+	['nmol', 'nmol'],
+	['umol', '\\micro mol'],
+	['mmol', 'mmol'],
+	['mol', 'mol'],
+	['kmol', 'kmol'],
+
+	['pA', 'pA'],
+	['nA', 'nA'],
+	['uA', '\\micro A'],
+	['mA', 'mA'],
+	['A', 'A'],
+	['kA', 'kA'],
+
+	['ul', '\\micro L'],
+	['ml', 'mL'],
+	['l', 'L'],
+	['hl', 'hL'],
+	['uL', '\\micro L'],
+	['mL', 'mL'],
+	['L', 'L'],
+	['hL', 'hL'],
+
+	['mHz', 'mHz'],
+	['Hz', 'Hz'],
+	['kHz', 'kHz'],
+	['MHz', 'MHz'],
+	['GHz', 'GHz'],
+	['THz', 'THz'],
+
+	['mN', 'mN'],
+	['N', 'N'],
+	['kN', 'kN'],
+	['MN', 'MN'],
+
+	['Pa', 'Pa'],
+	['kPa', 'kPa'],
+	['MPa', 'MPa'],
+	['GPa', 'GPa'],
+
+	['mohm', 'm\\ohm'],
+	['kohm', 'k\\ohm'],
+	['Mohm', 'M\\ohm'],
+
+	['pV', 'pV'],
+	['nV', 'nV'],
+	['uV', '\\micro V'],
+	['mV', 'mV'],
+	['V', 'V'],
+	['kV', 'kV'],
+
+	['W', 'W'],
+	['nW', 'nW'],
+	['uW', '\\micro W'],
+	['mW', 'mW'],
+	['kW', 'kW'],
+	['MW', 'MW'],
+	['GW', 'GW'],
+
+	['J', 'J'],
+	['uJ', '\\micro J'],
+	['mJ', 'mJ'],
+	['kJ', 'kJ'],
+
+	['eV', 'eV'],
+	['meV', 'meV'],
+	['keV', 'keV'],
+	['MeV', 'MeV'],
+	['GeV', 'GeV'],
+	['TeV', 'TeV'],
+
+	['kWh', 'kWh'],  // possible wrong formatting
+
+	['F', 'F'],
+	['fF', 'fF'],
+	['pF', 'pF'],
+	['nF', 'nF'],
+	['uF', '\\micro F'],
+
+	['H', 'H'],
+	['fH', 'fH'],
+	['pH', 'pH'],
+	['nH', 'nH'],
+	['uH', '\\micro H'],
+	['mH', 'mH'],
+
+	['C', 'C'],
+	['nC', 'nC'],
+	['mC', 'mC'],
+	['uC', '\\micro C'],
+
+	['K', 'K'],
+
+	['dB', 'dB'],
+
+	['bit', 'b'],
+
+	['byte', 'B'],
+]));
+
