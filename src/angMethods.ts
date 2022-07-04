@@ -176,6 +176,9 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 		}
 	}
 
+	if (displayResult != '' && options.angleSeparator != '') {
+		displayResult += options.angleSeparator;
+	}
 	if (ang.minutes != null || options.fillAngleMinutes) {
 		if (ang.minutes == null){
 			ang.minutes = generateNumberPiece();
@@ -205,6 +208,9 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 		}
 	} 
 
+	if (displayResult != '' && options.angleSeparator != '' && !displayResult.endsWith(options.angleSeparator)) {
+		displayResult += options.angleSeparator;
+	}
 	if (ang.seconds != null || options.fillAngleMinutes) {
 		if (ang.seconds == null){
 			ang.seconds = generateNumberPiece();
