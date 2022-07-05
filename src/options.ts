@@ -15,21 +15,21 @@ type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single';
 
 export interface IPrintOptions {
 	color: string;
-	mode: PrintMode;
+	mode: PrintMode;					// not implemented
 	numberColor: string;
-	numberMode: PrintMode;
-	propagateMathFont: boolean;
-	resetMathVersion: boolean;
-	resetTextFamily: boolean;
-	resetTextSeries: boolean;
-	resetTextShape: boolean;
-	textFamilyToMath:boolean;
-	textFontCommand:string;
-	textSubscriptCommand:string;
-	textSuperscriptCommand:string;
-	textSeriesToMath:boolean;
+	numberMode: PrintMode;				// not implemented
+	propagateMathFont: boolean;			// not implemented
+	resetMathVersion: boolean; 			// not implemented
+	resetTextFamily: boolean; 			// not implemented
+	resetTextSeries: boolean; 			// not implemented
+	resetTextShape: boolean; 			// not implemented
+	textFamilyToMath:boolean;			// not implemented
+	textFontCommand:string;				// not implemented
+	textSubscriptCommand:string;		// not implemented
+	textSuperscriptCommand:string;		// not implemented
+	textSeriesToMath:boolean;			// not implemented
 	unitColor:string;
-	unitMode:PrintMode;
+	unitMode:PrintMode;					// not implemented
 }
 
 export interface IUnitOptions {
