@@ -87,7 +87,7 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 	
 }
 
-function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
+export function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
 	// convert to scientific, then move decimal...
 	convertToScientific(num, options);
 	

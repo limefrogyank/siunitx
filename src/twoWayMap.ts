@@ -19,9 +19,9 @@ export class TwoWayMap<T,U>{
 
 	
 	public has(key:T) {return this.map.has(key);}
+	public revHas(key:U) {return this.reverseMap.has(key);}
 
 	public get(key:T) { return this.map.get(key); }
-
 	public revGet(key:U) { return this.reverseMap.get(key); }
 
 	public keys() { return this.map.keys(); }

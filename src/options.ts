@@ -10,7 +10,7 @@ type GroupDigits = 'all' | 'none' | 'decimal' | 'integer';
 type UncertaintyMode = 'separate'|'compact'|'full'|'compact-marker';
 type UncertaintyDescriptorMode = 'bracket'|'bracket-separator'|'separator'|'subscript';
 type AngleMode = 'input' | 'arc' | 'decimal';
-type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
+export type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
 type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single'; 
 
 export interface IPrintOptions {

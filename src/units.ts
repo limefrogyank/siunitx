@@ -1,3 +1,5 @@
+import { TwoWayMap } from "./twoWayMap";
+
 export const userDefinedUnits = new Map<string,string>();
 export const userDefinedUnitOptions = new Map<string,string>();
 
@@ -33,6 +35,41 @@ export const prefixSymbol = new Map<string,string>([
 	['zebi','Zi'],
 	['yobi','Yi'],
 ]);
+
+export const prefixPower = new TwoWayMap<string,number>(new Map<string,number>([
+	['Y', 24 ],
+	['Z', 21],
+	['E', 18],
+	['P', 15],
+	['T', 12],
+	['G', 9],
+	['M', 6],
+	['k', 3],
+	['h', 2],
+	['da', 1],
+	['d', -1],
+	['c', -2],
+	['m', -3],
+	['u', -6],
+	['n', -9],
+	['p', -12],
+	['f', -15],
+	['a', -18],
+	['z', -21],
+	['y', -24]
+]));
+
+export const binaryPrefixPower = new Map<string,number>([
+	['Ki', 10],
+	['Mi', 20],
+	['Gi', 30],
+	['Ti', 40],
+	['Pi', 50],
+	['Ei', 60],
+	['Zi', 70],
+	['Yi', 80],
+]);
+
 
 // These are separate from the shortcuts so we can parse literal strings that contain units.
 export const unitSymbol = new Map<string,string>([
@@ -186,7 +223,7 @@ export const unitSymbolsWithShortcuts = new Map<string, string>([
 	['GeV', 'GeV'],
 	['TeV', 'TeV'],
 
-	['kWh', 'kW\\, h'],  // possible wrong formatting
+	['kWh', 'kW\\, h'],  // possible wrong formatting, need to try using IUnitPiece[]
 
 	['F', 'F'],
 	['fF', 'fF'],
