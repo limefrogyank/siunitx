@@ -29,11 +29,6 @@ MathJax = {
 		}
 	</style>
 
-
-
-
-$$ \qty{3.233444}{\kilogram} $$
-
 <h2>Ang</h2>
 <table id="angTable" class="tableStyle"></table>
 
@@ -42,6 +37,9 @@ $$ \qty{3.233444}{\kilogram} $$
 
 <h2>Unit</h2>
 <table id="unitTable" class="tableStyle"></table>
+
+<h2>Qty</h2>
+<table id="qtyTable" class="tableStyle"></table>
 
 <h2>DeclareSIUnit</h2>
 <table id="declareSIUnitTable" class="tableStyle"></table>
@@ -255,6 +253,28 @@ $$ \qty{3.233444}{\kilogram} $$
 		tr.appendChild(td);
 		td = document.createElement('td');
 		td.innerText = "$$ " + unit[i] + " $$";
+		tr.appendChild(td);
+	}
+
+	var qty = [
+	String.raw`\qty[mode = text]{1.23}{J.mol^{-1}.K^{-1}}`,	
+	String.raw`\qty{.23e7}{\candela}`,
+	String.raw`\qty[per-mode = symbol]{1.99}{\per\kilogram}`,
+	String.raw`\qty[per-mode = fraction]{1,345}{\coulomb\per\mole}`,
+	String.raw``,
+	String.raw``,
+	String.raw``,
+];
+
+var table = document.getElementById('qtyTable');
+	for (var i = 0; i<qty.length; i++){
+		var tr = document.createElement('tr');
+		table.appendChild(tr);
+		var td = document.createElement('td');
+		td.innerText = qty[i];
+		tr.appendChild(td);
+		td = document.createElement('td');
+		td.innerText = "$$ " + qty[i] + " $$";
 		tr.appendChild(td);
 	}
 

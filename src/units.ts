@@ -48,6 +48,7 @@ export const unitSymbol = new Map<string,string>([
 
 	['becquerel', 'Bq'],
 	['degreeCelsius', '\\degree C'],
+	['coulomb','C'],
 	['farad', 'F'],
 	['gray', 'Gy'],
 	['hertz', 'Hz'],
