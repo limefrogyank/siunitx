@@ -1,10 +1,9 @@
-import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { displayOutput } from "./numDisplayMethods";
-import { parseNumber, processNumber } from "./numMethods";
+import { parseNumber } from "./numMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, IOptions, processOptions } from "./options";
-import { displayUnits, parseUnit, processUnit } from "./unitMethods";
+import { displayUnits, parseUnit } from "./unitMethods";
 
 
 export function processQuantity(parser:TexParser): void {

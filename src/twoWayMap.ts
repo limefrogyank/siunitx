@@ -8,7 +8,7 @@ export class TwoWayMap<T,U>{
 		this.map = map;
 		this.reverseMap = new Map<U,T>();
 
-		map.forEach((v,k,m)=>{
+		map.forEach((v,k)=>{
 			// This checks for multiple names for a unit.  Use the first name by default for the reverse lookup.
 			if (!this.reverseMap.has(v)){
 				this.reverseMap.set(v,k);
@@ -27,7 +27,7 @@ export class TwoWayMap<T,U>{
 	public keys() { return this.map.keys(); }
 	public values() { return this.reverseMap.keys(); }
 
-	public forEach(callbackfn: (value: U, key: T, map: Map<T, U>) => void, thisArg?: any) { return this.map.forEach(callbackfn);}
+	public forEach(callbackfn: (value: U, key: T, map: Map<T, U>) => void) { return this.map.forEach(callbackfn);}
 	
 
 	public array() { return [...this.map];}

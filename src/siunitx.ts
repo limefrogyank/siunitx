@@ -1,4 +1,3 @@
-import { MmlNode } from 'mathjax-full/js/core/MmlTree/MmlNode';
 import { TeX } from 'mathjax-full/js/input/tex';
 import { Configuration, ParserConfiguration } from 'mathjax-full/js/input/tex/Configuration';
 import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';

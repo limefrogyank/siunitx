@@ -211,6 +211,7 @@ export function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, opt
 		let lastHadSuperscript=false;
 		unitPieces.forEach((v)=>{
 			const latexResult = unitLatex(v, options);  
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			lastHadSuperscript = latexResult.superscriptPresent;
 			if (latex != ''){
 				latex += options.interUnitProduct;
