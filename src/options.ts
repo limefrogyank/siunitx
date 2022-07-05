@@ -1,6 +1,7 @@
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 
+type PrintMode = 'match' | 'math' | 'text';
 type PerMode = 'power'| 'fraction' | 'symbol' | 'power-positive-first' | 'repeated-symbol' | 'single-symbol' | 'perMode';
 export type QualifierMode = 'subscript' | 'bracket' | 'combine' | 'phrase';
 type ExponentMode = 'input' | 'fixed' | 'engineering' | 'scientific';
@@ -11,6 +12,25 @@ type UncertaintyDescriptorMode = 'bracket'|'bracket-separator'|'separator'|'subs
 type AngleMode = 'input' | 'arc' | 'decimal';
 type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
 type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single'; 
+
+export interface IPrintOptions {
+	color: string;
+	mode: PrintMode;
+	numberColor: string;
+	numberMode: PrintMode;
+	propagateMathFont: boolean;
+	resetMathVersion: boolean;
+	resetTextFamily: boolean;
+	resetTextSeries: boolean;
+	resetTextShape: boolean;
+	textFamilyToMath:boolean;
+	textFontCommand:string;
+	textSubscriptCommand:string;
+	textSuperscriptCommand:string;
+	textSeriesToMath:boolean;
+	unitColor:string;
+	unitMode:PrintMode;
+}
 
 export interface IUnitOptions {
 	interUnitProduct: string;
@@ -119,6 +139,25 @@ export interface IAngleOptions extends INumOptions {
 }
 
 export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions { }
+
+export const PrintOptionsDefault : IPrintOptions = {
+	color: '',
+	mode: 'math',
+	numberColor: '',
+	numberMode: 'math',
+	propagateMathFont: false,
+	resetMathVersion: true,
+	resetTextFamily: true,
+	resetTextSeries: true,
+	resetTextShape: true,
+	textFamilyToMath: false,
+	textFontCommand: '',
+	textSubscriptCommand: '\\textsubscript',
+	textSuperscriptCommand: '\\textsuperscript',
+	textSeriesToMath: false,
+	unitColor: '',
+	unitMode: 'math'
+}
 
 export const UnitOptionDefaults: IUnitOptions = {
     bracketUnitDenominator: true,
