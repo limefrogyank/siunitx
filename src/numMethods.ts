@@ -3,7 +3,7 @@ import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { displayOutput } from "./numDisplayMethods";
 import { postProcessNumber } from "./numPostProcessMethods";
-import { INumOptions, INumParseOptions, IOptions, processOptions } from "./options";
+import { findOptions, INumOptions, INumParseOptions, IOptions, processOptions } from "./options";
 
 
 
@@ -114,7 +114,7 @@ function parseSigns(text:string, numPiece: INumberPiece){
 }
 
 function parseOpenUncertainty(text:string, numPiece: INumberPiece){
-	let uncertainty : IUncertainty = {...UncertaintyDefault, type: 'bracket'};
+	const uncertainty : IUncertainty = {...UncertaintyDefault, type: 'bracket'};
 	numPiece.uncertainty.push(uncertainty);
 }
 
@@ -122,7 +122,7 @@ function parseCloseUncertainty(text:string, numPiece: INumberPiece){
 	if (numPiece.uncertainty.length == 0){
 		throw new TexError('50', 'No uncertainty parsed to close.');
 	}
-	let uncertainty = numPiece.uncertainty[numPiece.uncertainty.length -1];
+	const uncertainty = numPiece.uncertainty[numPiece.uncertainty.length -1];
 	if (uncertainty.completed){
 		throw new TexError('51', 'Uncertainty was already closed.');
 	}
@@ -130,11 +130,11 @@ function parseCloseUncertainty(text:string, numPiece: INumberPiece){
 }
 
 function parseUncertaintySigns(text:string, numPiece: INumberPiece){
-	let uncertainty:IUncertainty = {...UncertaintyDefault, type: 'pm'};
+	const uncertainty:IUncertainty = {...UncertaintyDefault, type: 'pm'};
 	numPiece.uncertainty.push(uncertainty);
 }
 
-function parseIgnore(text:string, numPiece: INumberPiece){
+function parseIgnore(){
 	// do nothing
 }
 
@@ -143,7 +143,7 @@ export function generateNumberMapping(options: INumParseOptions): Map<string, Ch
 	const parseMap = new Map<string,CharNumFunction | Map<string,CharNumFunction>>();
 	//parseMap.set('\\', parseMacro);
 	let tempArray;
-	var matchMacrosOrChar = /[^\\\s]|(?:\\[^\\]*(?=\s|\\|$))/g;
+	const matchMacrosOrChar = /[^\\\s]|(?:\\[^\\]*(?=\s|\\|$))/g;
 	while ((tempArray = matchMacrosOrChar.exec(options.inputComparators)) !== null) {
 		parseMap.set(tempArray[0], parseComparators);
 	}
@@ -265,26 +265,30 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 		return num;
 }
 
-export function processNumber(parser:TexParser, text:string, localOptions: string): MmlNode{
-	
-	let globalOptions: IOptions = {...parser.options as IOptions};
-	let options = processOptions(globalOptions, localOptions);
+export function processNumber(parser:TexParser): MmlNode{
+	const globalOptions : IOptions = {...parser.options as IOptions};
 
-	if (options.parseNumbers){
+	const localOptionString = findOptions(parser);        
+
+	processOptions(globalOptions, localOptionString);
+
+	const text = parser.GetArgument('num');
+
+	if (globalOptions.parseNumbers){
 
 		// going to assume evaluate expression is processed first, THEN the result is parsed normally
-		if (options.evaluateExpression){
+		if (globalOptions.evaluateExpression){
 			// TO-DO (BIG ONE)
 		}
 
-		const num = parseNumber(parser,text,options);
+		const num = parseNumber(parser,text,globalOptions);
 
-		postProcessNumber(num,options);
+		postProcessNumber(num,globalOptions);
 
-		const displayResult = displayOutput(num, options);
+		const displayResult = displayOutput(num, globalOptions);
 
 		const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
-    	return mml;
+		return mml;
 
 	} else {
 		const mml = (new TexParser(text, parser.stack.env, parser.configuration)).mml();

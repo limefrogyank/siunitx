@@ -1,10 +1,9 @@
 import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
-import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./errors";
 import { displayNumber } from "./numDisplayMethods";
 import { CharNumFunction, generateNumberMapping, generateNumberPiece, INumberPiece } from "./numMethods";
-import { IAngleOptions, IOptions, processOptions } from "./options";
+import { findOptions, IAngleOptions, IOptions, processOptions } from "./options";
 
 interface IAnglePiece {
 	degrees: INumberPiece;
@@ -19,12 +18,6 @@ export function generateAnglePiece():IAnglePiece{
 	};
 	return ang;
 }
-
-const AnglePieceDefault : IAnglePiece = {
-	degrees: null,
-	minutes: null,
-	seconds: null
-};
 
 function parseAngle(parser:TexParser, text:string, options: IAngleOptions) : IAnglePiece {
 	const ang : IAnglePiece = generateAnglePiece();
@@ -93,7 +86,7 @@ function parseAngle(parser:TexParser, text:string, options: IAngleOptions) : IAn
 	return ang;
 }
 
-function convertToArc(ang:IAnglePiece, options:IAngleOptions):void{
+function convertToArc(ang:IAnglePiece):void{
 	if (ang.minutes != null || ang.seconds != null){
 		// already arc format
 		return;
@@ -124,7 +117,7 @@ function convertToArc(ang:IAnglePiece, options:IAngleOptions):void{
 
 }
 
-function convertToDecimal(ang:IAnglePiece, options:IAngleOptions):void{
+function convertToDecimal(ang:IAnglePiece):void{
 	let value = 0;
 	if (ang.seconds != null){
 		value = +ang.seconds.whole/60;
@@ -146,7 +139,8 @@ function convertToDecimal(ang:IAnglePiece, options:IAngleOptions):void{
 
 
 const modeMapping = new Map<string, (ang:IAnglePiece, options:IAngleOptions)=>void>([
-	['input', (ang:IAnglePiece, options:IAngleOptions): void => { }], // do nothing
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	['input', (): void => { }], // do nothing
 	['arc', convertToArc],
 	['decimal', convertToDecimal] 
 ]);
@@ -158,7 +152,7 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 	if (degreeValue != 0 && !options.fillAngleDegrees){
 
 		if (options.angleSymbolOverDecimal){
-			let number = displayNumber(ang.degrees, options);
+			const number = displayNumber(ang.degrees, options);
 			const split= number.split(options.outputDecimalMarker);
 			if (split.length > 1){
 				displayResult += split[0];
@@ -189,7 +183,7 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 		if (minutesValue != 0 && !options.fillAngleDegrees){
 
 			if (options.angleSymbolOverDecimal){
-				let number = displayNumber(ang.minutes, options);
+				const number = displayNumber(ang.minutes, options);
 				const split= number.split(options.outputDecimalMarker);
 				if (split.length > 1){
 					displayResult += split[0];
@@ -221,7 +215,7 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 		if (secondsValue != 0 && !options.fillAngleDegrees){
 
 			if (options.angleSymbolOverDecimal){
-				let number = displayNumber(ang.seconds, options);
+				const number = displayNumber(ang.seconds, options);
 				const split= number.split(options.outputDecimalMarker);
 				if (split.length > 1){
 					displayResult += split[0];
@@ -244,19 +238,26 @@ function displayAngle(ang:IAnglePiece, options:IAngleOptions) : string {
 }
 
 
-export function processAngle(parser:TexParser, text:string, localOptions: string):MmlNode {
+export function processAngle(parser:TexParser):MmlNode {
 
-	let globalOptions: IOptions = {...parser.options as IOptions};
-	let options = processOptions(globalOptions, localOptions);
-	const ang = parseAngle(parser, text, options);
+	const globalOptions : IOptions = {...parser.options as IOptions};
+
+	const localOptionString = findOptions(parser);       
+
+	processOptions(globalOptions, localOptionString);
+
+	const text = parser.GetArgument('ang');
+
+	processOptions(globalOptions, localOptionString);
+	const ang = parseAngle(parser, text, globalOptions);
 
 	// consider error checking result
 	// Is there an exponent??  Maybe throw an error.
 	
 	// transform angle format
-	modeMapping.get(options.angleMode)(ang, options);
+	modeMapping.get(globalOptions.angleMode)(ang, globalOptions);
 	
-	const displayResult = displayAngle(ang, options);
+	const displayResult = displayAngle(ang, globalOptions);
 
 	const mml = (new TexParser(displayResult, parser.stack.env, parser.configuration)).mml();
     

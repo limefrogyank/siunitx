@@ -3,9 +3,9 @@ import { INumOutputOptions } from "./options";
 
 function addSpacing(text:string, digitGroupSize:number, minimum: number, spacer:string, reverse: boolean, digitGroupFirstSize?: number, digitGroupOtherSize?: number ){
 	if (text.length >= minimum){
-		let arr = text.split('');
+		const arr = text.split('');
 		let adjusted = 0;
-		let firstCount= digitGroupFirstSize != -1 ? digitGroupFirstSize : digitGroupSize;
+		const firstCount= digitGroupFirstSize != -1 ? digitGroupFirstSize : digitGroupSize;
 		let fluidCount = firstCount;
 		if (reverse){
 			for (let i=firstCount; i < arr.length; i+=fluidCount){
@@ -38,7 +38,8 @@ const groupNumbersMap = new Map<string,(num:INumberPiece, options:INumOutputOpti
 	['integer', (num:INumberPiece, options:INumOutputOptions):void => {
 		num.whole = addSpacing(num.whole, options.digitGroupSize, options.groupMinimumDigits, options.groupSeparator, false, options.digitGroupFirstSize, options.digitGroupOtherSize);
 	}],
-	['none', (num:INumberPiece, options:INumOutputOptions):void => {}]
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	['none', ():void => { }]
 ]);
 
 
@@ -105,8 +106,7 @@ function displayUncertaintyBracket(uncertainty: IUncertainty, options: INumOutpu
 }
 
 function displayUncertaintyPlusMinus(uncertainty: IUncertainty, options: INumOutputOptions):string{
-	let output = '\\pm';
-	return output + displayNumber(uncertainty, options);
+	return '\\pm' + displayNumber(uncertainty, options);
 }
 
 const uncertaintyModeMapping = new Map<string, ( uncertainty:IUncertainty, value: INumberPiece, options: INumOutputOptions)=>string>([

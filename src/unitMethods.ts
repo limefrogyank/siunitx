@@ -2,7 +2,7 @@ import { MmlNode } from "mathjax-full/js/core/MmlTree/MmlNode";
 import TexError from "mathjax-full/js/input/tex/TexError";
 import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { siunitxError } from "./errors";
-import { IOptions, IUnitOptions, processOptions, QualifierMode } from "./options";
+import { findOptions, IOptions, IUnitOptions, processOptions, QualifierMode } from "./options";
 import { UserDefinedUnitOptionsKey, UserDefinedUnitsKey } from "./siunitx";
 import { prefixSymbol, unitSymbol, unitSymbolsWithShortcuts } from "./units";
 
@@ -11,7 +11,7 @@ export interface IUnitPiece {
 	prefix?:string;
 	position?: 'numerator' | 'denominator', // used as an override for power.  i.e. can make power negative if denominator.
 	power?:number;
-	qualifier?:any;
+	qualifier?:string;
 	cancel?: boolean;
 	highlight?: string; // color
 }
@@ -63,10 +63,10 @@ function processUnitMacro(macro:string, parser:TexParser) : IUnitMacroProcessRes
 }
 
 const modifierMacroMap = new Map<string, (macro:string, parser:TexParser)=>IUnitMacroProcessResult>([
-	['square', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result: {power: 2}};}], 
-	['cubic', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result: {power: 3}};}],
-	['squared', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "previous", result: {power: 2}};}],
-	['cubed', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "previous", result: {power: 3}};}],
+	['square', ():IUnitMacroProcessResult => {return {type: "next", result: {power: 2}};}], 
+	['cubic', ():IUnitMacroProcessResult => {return {type: "next", result: {power: 3}};}],
+	['squared', ():IUnitMacroProcessResult => {return {type: "previous", result: {power: 2}};}],
+	['cubed', ():IUnitMacroProcessResult => {return {type: "previous", result: {power: 3}};}],
 	['tothe', (macro:string, parser:TexParser):IUnitMacroProcessResult => {
 		const arg = parser.GetArgument('tothe', true);
 		return {type: "previous", result: {power: +arg}};
@@ -75,12 +75,12 @@ const modifierMacroMap = new Map<string, (macro:string, parser:TexParser)=>IUnit
 		const arg = parser.GetArgument('raiseto');
 		return {type: "next", result: {power: +arg}};
 	}],
-	['per', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result: {position: 'denominator'}};}],
+	['per', ():IUnitMacroProcessResult => {return {type: "next", result: {position: 'denominator'}};}],
 	['of', (macro:string, parser:TexParser):IUnitMacroProcessResult => {
 		const arg = parser.GetArgument('of');
 		return {type: "previous", result:{qualifier: arg}};
 	}],
-	['cancel', (macro:string, parser:TexParser):IUnitMacroProcessResult => {return {type: "next", result:{cancel: true}};}],
+	['cancel', ():IUnitMacroProcessResult => {return {type: "next", result:{cancel: true}};}],
 	['highlight', (macro:string, parser:TexParser):IUnitMacroProcessResult => {
 		const arg = parser.GetArgument('highlight');
 		return {type: "next", result:{highlight: arg}};
@@ -92,13 +92,13 @@ function processModifierMacro(macro:string, parser:TexParser) : IUnitMacroProces
 }
 
 const qualiferMethod = new Map<QualifierMode, (qualifer:string, phrase?:string)=>string>([
-	['subscript', (qualifer:string, phrase?:string):string => {return '_{'+ qualifer + '}';}],
-	['bracket', (qualifer:string, phrase?:string):string => {return '('+ qualifer + ')';}],
-	['combine', (qualifer:string, phrase?:string):string => {return qualifer; }],
+	['subscript', (qualifer:string):string => {return '_{'+ qualifer + '}';}],
+	['bracket', (qualifer:string):string => {return '('+ qualifer + ')';}],
+	['combine', (qualifer:string):string => {return qualifer; }],
 	['phrase', (qualifer:string, phrase?:string):string => {return phrase + qualifer;}],
 ]);
 
-function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower: boolean = false) : {latex: string, superscriptPresent:boolean }{
+function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower = false) : {latex: string, superscriptPresent:boolean }{
 	let unitLatex = '';
 	if (unitPiece.cancel){
 		unitLatex += '\\cancel{';
@@ -129,9 +129,9 @@ function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower: boolea
 	return {latex: unitLatex, superscriptPresent: power != 1 };
 }
 
-function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: IUnitOptions) : MmlNode {
+export function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: IOptions) : MmlNode {
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
-	let mml: MmlNode;
+
 	let texString:string;
 	let perForSingle: boolean;
 	if (unitPieces.length >= 2 && unitPieces.filter((v)=>{
@@ -146,7 +146,7 @@ function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: I
 		let numerator = '';
 		let denominator = '';
 		let lastNumeratorHadSuperscript=false;
-		unitPieces.forEach((v,i,a)=>{
+		unitPieces.forEach((v)=>{
 			let latexResult;			
 			if (v.position == 'denominator' || (v.power != null && v.power < 0)){
 				latexResult = unitLatex(v, options, options.perMode == 'fraction' || options.perMode == 'symbol' || options.perMode == 'repeated-symbol' || options.perMode == "single-symbol" || perForSingle);  
@@ -209,8 +209,8 @@ function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: I
 		}
 		let latex = '';
 		let lastHadSuperscript=false;
-		unitPieces.forEach((v,i,a)=>{
-			let latexResult = unitLatex(v, options);  
+		unitPieces.forEach((v)=>{
+			const latexResult = unitLatex(v, options);  
 			lastHadSuperscript = latexResult.superscriptPresent;
 			if (latex != ''){
 				latex += options.interUnitProduct;
@@ -221,14 +221,13 @@ function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: I
 
 		texString = latex;
 	}
-	mml = (new TexParser(texString, parser.stack.env, parser.configuration)).mml();	
-	return mml;
+	return (new TexParser(texString, parser.stack.env, parser.configuration)).mml();	
+
 }
 
-export function parseUnit(parser: TexParser, text:string, options: string): MmlNode {
-	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
+export function parseUnit(parser: TexParser, text:string, globalOptions: IOptions, localOptionString: string) : Array<IUnitPiece> {
 	const unitPieces: Array<IUnitPiece> = new Array<IUnitPiece>();
-	let globalOptions: IOptions = {...parser.options as IOptions};
+	
 	// argument contains either macros or it's just plain text
 	if (text.indexOf('\\') != -1){
 		const subParser = new TexParser(text, parser.stack.env, parser.configuration)
@@ -239,10 +238,10 @@ export function parseUnit(parser: TexParser, text:string, options: string): MmlN
 			const processedMacro = processUnitMacro(macro, subParser);
 			// check for user defined options
 			if (processedMacro.options !== undefined){
-				globalOptions = processOptions(globalOptions, processedMacro.options);
+				processOptions(globalOptions, processedMacro.options);
 			}
 			// apply immediate options here
-			globalOptions = processOptions(globalOptions, options);
+			processOptions(globalOptions, localOptionString);
 			
 			switch (processedMacro.type){
 				case 'next':
@@ -254,17 +253,20 @@ export function parseUnit(parser: TexParser, text:string, options: string): MmlN
 					}
 					break;
 				case 'previous':
+				{
 					if (unitPieces.length == 0){
 						throw new TexError("MissingPreviousMacro", "There is no previous macro for %1 to modify.", macro);
 					}
 					let last = unitPieces[unitPieces.length - 1];
 					last = Object.assign(last, processedMacro.result);
 					break;
+				}
 				case 'unit':
+				{
 					if (nextModifier != null){
 						processedMacro.result = Object.assign(processedMacro.result, nextModifier);
-						if (globalOptions.perMode == 'repeated-symbol'){
-							let denom = nextModifier.position == 'denominator';
+						if ((parser.options as IOptions).perMode == 'repeated-symbol'){
+							const denom = nextModifier.position == 'denominator';
 							nextModifier = null;
 							if (denom){
 								nextModifier = {position: 'denominator'};
@@ -275,12 +277,30 @@ export function parseUnit(parser: TexParser, text:string, options: string): MmlN
 					}
 					unitPieces.push(processedMacro.result);
 					break;
+				}
 			}
 		}
 
 	} else {
 		unitPieces.push(...parsePlainTextUnits(parser, text));
 	}
+	return unitPieces;
+}
+
+export function processUnit(parser: TexParser): MmlNode {
+	const globalOptions : IOptions = {...parser.options as IOptions};
+
+	const localOptionString = findOptions(parser);    
+	
+	//processOptions(globalOptions, localOptionString);
+
+	const text = parser.GetArgument('unit');
+
+	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
+	//let globalOptions: IOptions = {...parser.options as IOptions};
+	
+	const unitPieces = parseUnit(parser, text, globalOptions, localOptionString);
+	
 
 	const mml = displayUnits(parser, unitPieces, globalOptions);
 	
@@ -313,10 +333,9 @@ function parsePlainTextUnits(parser:TexParser, text:string): Array<IUnitPiece> {
 	const subParser = new TexParser(text, parser.stack.env, parser.configuration);
 	subParser.i=0;
 
-	let j = 0;
 	let unitPiece:IUnitPiece = { position: 'numerator'};
-	let isDenominator: boolean=false;
-	let prefixUnit:string = '';
+	let isDenominator = false;
+	let prefixUnit = '';
 	while (subParser.i < subParser.string.length){
 		switch (subParser.string.charAt(subParser.i)) {
 			case '~':
@@ -336,6 +355,7 @@ function parsePlainTextUnits(parser:TexParser, text:string): Array<IUnitPiece> {
 				unitPiece = {position: isDenominator ? 'denominator' : 'numerator'};
 				break;
 			case '^':
+			{
 				//power
 				let next = subParser.string.charAt(++subParser.i);
 				let power = '';
@@ -348,9 +368,11 @@ function parsePlainTextUnits(parser:TexParser, text:string): Array<IUnitPiece> {
 				}
 				unitPiece.power = +power;
 				break;
+			}
 			case '_':
+			{
 				//of
-				next = subParser.string.charAt(++subParser.i);
+				let next = subParser.string.charAt(++subParser.i);
 				let qualifier = '';
 				if (next == '{'){
 					while ((next = subParser.string.charAt(++subParser.i)) != '}'){
@@ -361,6 +383,7 @@ function parsePlainTextUnits(parser:TexParser, text:string): Array<IUnitPiece> {
 				}
 				unitPiece.qualifier = qualifier;
 				break;
+			}
 			default:
 				//add char to prefix-unit string
 				prefixUnit += subParser.string.charAt(subParser.i);

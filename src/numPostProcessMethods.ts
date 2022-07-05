@@ -1,8 +1,5 @@
-import TexParser from "mathjax-full/js/input/tex/TexParser";
-import { WatchIgnorePlugin } from "webpack";
-import { convertUncertaintyToBracket } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
-import { INumOptions, INumOutputOptions, INumPostOptions, IOptions } from "./options";
+import { INumOptions, INumPostOptions, IOptions } from "./options";
 import { GlobalParser } from "./siunitx";
 
 function convertToScientific(num:INumberPiece, options: INumPostOptions) : void {
@@ -42,12 +39,12 @@ function convertToScientific(num:INumberPiece, options: INumPostOptions) : void 
 		newNum.decimal = '.';
 	}
 	// copy the new values to the original reference
-	for (let prop in num){
+	for (const prop in num){
 		num[prop] = newNum[prop];
 	}
 }
 
-function convertToXExponent(num:INumberPiece, targetExponent: number, options: INumPostOptions){
+function convertToXExponent(num:INumberPiece, targetExponent: number){
 	if (num == null) return;
 	// count difference between target exponent and current one.
 	const diff = targetExponent - +(num.exponentSign + num.exponent);
@@ -86,7 +83,7 @@ function convertToEngineering(num:INumberPiece, options: INumPostOptions):void {
 		targetExponent--;
 	}
 		
-	convertToXExponent(num, targetExponent, options);
+	convertToXExponent(num, targetExponent);
 	
 }
 
@@ -94,11 +91,12 @@ function convertToFixed(num:INumberPiece, options: INumPostOptions):void {
 	// convert to scientific, then move decimal...
 	convertToScientific(num, options);
 	
-	convertToXExponent(num, options.fixedExponent, options);
+	convertToXExponent(num, options.fixedExponent);
 }
 
 const exponentModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
-	['input', (num:INumberPiece, options: INumPostOptions):void => { }],  // leave number as-is
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	['input', ():void => { }],  // leave number as-is
 	['fixed', convertToFixed],
 	['engineering', convertToEngineering],
 	['scientific', convertToScientific]
@@ -123,9 +121,9 @@ function shouldRoundUp(toRound:number, firstDrop:number, roundEven:boolean):bool
 	return result;
 }
 
-function roundUp(fullNumber:string, position:number, options:INumPostOptions):string{
+function roundUp(fullNumber:string, position:number):string{
 	let result = '';
-	let reverseNumArr = new Array<number>();
+	const reverseNumArr = new Array<number>();
 	let digit = +fullNumber[position] + 1;
 	let roundedNine = digit == 0 ? true : false;
 	reverseNumArr.push(digit); 
@@ -153,7 +151,7 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 			const toRound = +num.fractional.slice(options.roundPrecision - 1, options.roundPrecision);
 			
 			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
-				const result = roundUp(num.whole + num.fractional, num.whole.length + options.roundPrecision - 1, options);
+				const result = roundUp(num.whole + num.fractional, num.whole.length + options.roundPrecision - 1);
 				const wholeLength = num.whole.length;
 				num.whole = result.slice(0,wholeLength);
 				num.fractional = result.slice(wholeLength, result.length);
@@ -162,7 +160,7 @@ function roundPlaces(num:INumberPiece, options: INumPostOptions):void{
 			}		
 
 		} else if (num.fractional.length < options.roundPrecision && options.roundPad) {
-			for (var i = 0; i < options.roundPrecision-num.fractional.length; i++){
+			for (let i = 0; i < options.roundPrecision-num.fractional.length; i++){
 				num.fractional += '0';  // pad with zeros
 			}
 		} else {
@@ -186,7 +184,7 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 			let roundingResult;
 			// round up or down
 			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
-				roundingResult = roundUp(combined, options.roundPrecision - 1, options);
+				roundingResult = roundUp(combined, options.roundPrecision - 1);
 			} else {
 				roundingResult = combined.slice(0, options.roundPrecision);
 			}
@@ -206,7 +204,7 @@ function roundFigures(num:INumberPiece, options: INumPostOptions):void{
 
 		} else if (combined.length < options.roundPrecision && options.roundPad) {
 			
-			for (var i = 0; i < options.roundPrecision-combined.length; i++){
+			for (let i = 0; i < options.roundPrecision-combined.length; i++){
 				num.fractional += '0';  // pad with zeros, it's only going to go in the fractional part
 				if (num.decimal == '') num.decimal = '.';
 			}
@@ -254,7 +252,7 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 				const toRound = +uncertainty.whole.slice(options.roundPrecision - 1, options.roundPrecision);
 				
 				if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
-					uncertainty.whole = roundUp(uncertainty.whole, options.roundPrecision - 1, options);
+					uncertainty.whole = roundUp(uncertainty.whole, options.roundPrecision - 1);
 				} else {
 					uncertainty.whole = uncertainty.whole.slice(0, options.roundPrecision);
 				}		
@@ -272,7 +270,7 @@ function roundUncertainty(num:INumberPiece, options: INumPostOptions):void{
 			let roundingResult;
 			// round up or down
 			if (shouldRoundUp(toRound, firstDrop, options.roundHalf == 'even')){
-				roundingResult = roundUp(combined, precision - 1, options);
+				roundingResult = roundUp(combined, precision - 1);
 			} else {
 				roundingResult = combined.slice(0, precision);
 			}
@@ -318,7 +316,8 @@ function afterRoundZeroOptions(num:INumberPiece, options: INumPostOptions){
 }
 
 const roundModeMap = new Map<string, (num:INumberPiece, options: INumPostOptions)=>void>([
-	['none', (num:INumberPiece, options: INumPostOptions):void =>{}],
+	// eslint-disable-next-line @typescript-eslint/no-empty-function
+	['none', ():void =>{ }],
 	['places', roundPlaces],
 	['figures', roundFigures],
 	['uncertainty', roundUncertainty]

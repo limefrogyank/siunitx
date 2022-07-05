@@ -9,6 +9,8 @@ type GroupDigits = 'all' | 'none' | 'decimal' | 'integer';
 type UncertaintyMode = 'separate'|'compact'|'full'|'compact-marker';
 type UncertaintyDescriptorMode = 'bracket'|'bracket-separator'|'separator'|'subscript';
 type AngleMode = 'input' | 'arc' | 'decimal';
+type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
+type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single'; 
 
 export interface IUnitOptions {
 	interUnitProduct: string;
@@ -92,7 +94,15 @@ export interface INumOutputOptions {
 	zeroSymbol:string;
 }
 
-export interface INumOptions extends INumParseOptions, INumPostOptions, INumOutputOptions { };
+export interface INumOptions extends INumParseOptions, INumPostOptions, INumOutputOptions { }
+
+export interface IQuantityOptions extends INumOptions, IUnitOptions{
+	allowQuantityBreaks: boolean;
+	extractMassInKilograms: boolean;
+	prefixMode: PrefixMode;
+	quantityProduct: '\\,';
+	separateUncertaintyUnits: SeparateUncertaintyUnits;
+}
 
 // since angles use the same system number processing system, it extends the INumOptions
 export interface IAngleOptions extends INumOptions {
@@ -108,7 +118,7 @@ export interface IAngleOptions extends INumOptions {
 	numberAngleProduct: string
 }
 
-export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions { };
+export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions { }
 
 export const UnitOptionDefaults: IUnitOptions = {
     bracketUnitDenominator: true,
@@ -194,6 +204,15 @@ export const NumOutputOptionDefaults: INumOutputOptions = {
 
 export const NumOptionDefaults: INumOptions = {...NumParseOptionDefaults, ...NumPostOptionDefaults, ...NumOutputOptionDefaults};
 
+export const QuantityOptionDefaults: IQuantityOptions = {
+	...NumOptionDefaults,
+	...UnitOptionDefaults,
+	allowQuantityBreaks: false,
+	extractMassInKilograms: true,
+	prefixMode: 'input',
+	quantityProduct: '\\,',
+	separateUncertaintyUnits: 'bracket'
+}
 
 export const AngleOptionDefaults: IAngleOptions = {
 	...NumOptionDefaults,
@@ -216,7 +235,7 @@ export function findOptions(parser:TexParser): string {
 	if (parser.GetNext() !== '['){
 		return options;
 	}
-	let j = ++parser.i;
+	const j = ++parser.i;
 	let depth=0;
 	while (parser.i < parser.string.length){
 		if (parser.string.charAt(parser.i) == '{') depth++; 
@@ -239,8 +258,8 @@ function camelCase(input: string) {
     });
 }
 
-export function processOptions(defaultOptions: IOptions, optionString: string) : IOptions {
-	const options : IOptions = {...defaultOptions};
+export function processOptions(globalOptions: IOptions, optionString: string) : void {
+	//const options : IOptions = {...defaultOptions};
 
 	if (optionString != null){
 		// check if wrapped in curly braces and remove them
@@ -281,14 +300,14 @@ export function processOptions(defaultOptions: IOptions, optionString: string) :
 				prop = camelCase(prop.trim());
 				//console.log(prop + ': ' + value);
 				if (value == ''){
-					options[prop] = true;
+					globalOptions[prop] = true;
 				}
-				else if ( typeof options[prop] === 'number' ){
-					options[prop] = +(value.trim());
-				} else if (typeof options[prop] === 'boolean') {
-					options[prop] = (value.trim() === 'true');
+				else if ( typeof globalOptions[prop] === 'number' ){
+					globalOptions[prop] = +(value.trim());
+				} else if (typeof globalOptions[prop] === 'boolean') {
+					globalOptions[prop] = (value.trim() === 'true');
 				} else {
-					options[prop] = value.trim();
+					globalOptions[prop] = value.trim();
 				}
 				prop = '';
 				value = '';
@@ -311,16 +330,16 @@ export function processOptions(defaultOptions: IOptions, optionString: string) :
 		prop = camelCase(prop.trim());
 		//console.log(prop + ': ' + value);
 		if (value == ''){
-			options[prop] = true;
+			globalOptions[prop] = true;
 		}
-		else if ( typeof options[prop] === 'number' ){
-			options[prop] = +(value.trim());
-		} else if (typeof options[prop] === 'boolean') {
-			options[prop] = (value.trim() === 'true');
+		else if ( typeof globalOptions[prop] === 'number' ){
+			globalOptions[prop] = +(value.trim());
+		} else if (typeof globalOptions[prop] === 'boolean') {
+			globalOptions[prop] = (value.trim() === 'true');
 		} else {
-			options[prop] = value.trim();
+			globalOptions[prop] = value.trim();
 		}
 	}
 
-	return options;
+	//return options;
 }
