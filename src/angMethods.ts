@@ -138,7 +138,7 @@ function convertToDecimal(ang:IAnglePiece):void{
 }
 
 
-const modeMapping = new Map<string, (ang:IAnglePiece, options:IAngleOptions)=>void>([
+const modeMapping = new Map<string, (ang:IAnglePiece)=>void>([
 	// eslint-disable-next-line @typescript-eslint/no-empty-function
 	['input', (): void => { }], // do nothing
 	['arc', convertToArc],
@@ -255,7 +255,7 @@ export function processAngle(parser:TexParser):MmlNode {
 	// Is there an exponent??  Maybe throw an error.
 	
 	// transform angle format
-	modeMapping.get(globalOptions.angleMode)(ang, globalOptions);
+	modeMapping.get(globalOptions.angleMode)(ang);
 	
 	const displayResult = displayAngle(ang, globalOptions);
 

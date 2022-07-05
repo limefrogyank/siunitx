@@ -345,6 +345,9 @@ export function processOptions(globalOptions: IOptions, optionString: string) : 
 				} else if (typeof globalOptions[prop] === 'boolean') {
 					globalOptions[prop] = (value.trim() === 'true');
 				} else {
+					if (value.indexOf('\\') == -1){
+						value = value.trim();
+					}
 					globalOptions[prop] = value;
 				}
 				prop = '';
@@ -375,6 +378,9 @@ export function processOptions(globalOptions: IOptions, optionString: string) : 
 		} else if (typeof globalOptions[prop] === 'boolean') {
 			globalOptions[prop] = (value.trim() === 'true');
 		} else {
+			if (value.indexOf('\\') == -1){
+				value = value.trim();
+			}
 			globalOptions[prop] = value;
 		}
 	}
