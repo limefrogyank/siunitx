@@ -14,9 +14,9 @@ type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
 type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single'; 
 
 export interface IPrintOptions {
-	color: string;
+	color: string;						// not implemented
 	mode: PrintMode;					// not implemented
-	numberColor: string;
+	numberColor: string;				// not implemented
 	numberMode: PrintMode;				// not implemented
 	propagateMathFont: boolean;			// not implemented
 	resetMathVersion: boolean; 			// not implemented
@@ -28,7 +28,7 @@ export interface IPrintOptions {
 	textSubscriptCommand:string;		// not implemented
 	textSuperscriptCommand:string;		// not implemented
 	textSeriesToMath:boolean;			// not implemented
-	unitColor:string;
+	unitColor:string;					// not implemented
 	unitMode:PrintMode;					// not implemented
 }
 

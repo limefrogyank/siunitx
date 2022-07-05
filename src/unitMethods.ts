@@ -113,7 +113,9 @@ function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower = false
 		? (absPower 
 			? Math.abs(unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1)) 
 			: unitPiece.power * (unitPiece.position == 'denominator' ? -1 : 1)) 
-		: 1 * (unitPiece.position == 'denominator' ? -1 : 1);
+		: (absPower 
+			? Math.abs(1 * (unitPiece.position == 'denominator' ? -1 : 1))
+			: 1 * (unitPiece.position == 'denominator' ? -1 : 1));
 	if (power != null && power != 1 ){
 		unitLatex += '^{' + power + '}';
 	}

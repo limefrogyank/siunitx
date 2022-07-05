@@ -146,7 +146,6 @@ $$\color{red} \qty{4}{\kilogram}  \qty[color=blue]{4}{\kilogram} \mathrm{still r
 		String.raw`\num[uncertainty-mode = compact-marker]{123.45(120)}`,
 		String.raw`\num[uncertainty-mode = compact-marker]{0.035(14)}`,
 		String.raw`\num[uncertainty-mode=separate]{1.234 +- 0.005}`,
-		String.raw`\num[uncertainty-mode=separate,output-open-uncertainty=[,output-close-uncertainty=],uncertainty-separator=\,]{1.234(5)}`,
 		String.raw`\num[{uncertainty-mode=compact,output-open-uncertainty=[,output-close-uncertainty=],uncertainty-separator=\,}]{1.234(5)}`,
 		String.raw`\num{-15673}`,
 		String.raw`\num[bracket-negative-numbers]{-15673}`,
@@ -229,6 +228,7 @@ $$\color{red} \qty{4}{\kilogram}  \qty[color=blue]{4}{\kilogram} \mathrm{still r
 		String.raw`\unit[inter-unit-product = \cdot]{\kilo\gram\meter\squared\per\second\squared}`,
 		String.raw`\unit{g}`,
 		String.raw`\unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second\squared}`,
+		String.raw`\unit[per-mode=symbol]{\kilo\gram\meter\squared\per\second}`,
 		String.raw`\unit[per-mode=symbol, per-symbol-script-correction = ]{\kilo\gram\meter\squared\per\second\squared}`,
 		String.raw`\unit[per-mode=fraction]{\kilo\gram\meter\tothe{2}\per\second\tothe{2}}`,
 		String.raw`\unit[per-mode=fraction]{\highlight{red}\kilo\gram\meter\tothe{2}\per\highlight{orange}\second\tothe{2}}`,
@@ -259,11 +259,10 @@ $$\color{red} \qty{4}{\kilogram}  \qty[color=blue]{4}{\kilogram} \mathrm{still r
 	}
 
 	var qty = [
-	String.raw`\qty[mode = text]{1.23}{J.mol^{-1}.K^{-1}}`,	
+	String.raw`\qty{1.23}{J.mol^{-1}.K^{-1}}`,	
 	String.raw`\qty{.23e7}{\candela}`,
 	String.raw`\qty[per-mode = symbol]{1.99}{\per\kilogram}`,
 	String.raw`\qty[per-mode = fraction]{1,345}{\coulomb\per\mole}`,
-	String.raw``,
 	String.raw``,
 	String.raw``,
 ];

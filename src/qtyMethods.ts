@@ -41,7 +41,6 @@ export function processQuantity(parser:TexParser): void {
 
 
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptionString);
-	
 
 	const unitNode = displayUnits(parser, unitPieces, globalOptions);
 
