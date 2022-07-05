@@ -4,7 +4,7 @@ import { INumberPiece, parseNumber } from "./numMethods";
 import { convertToFixed, postProcessNumber } from "./numPostProcessMethods";
 import { findOptions, IOptions, IQuantityOptions, PrefixMode, processOptions } from "./options";
 import { displayUnits, IUnitPiece, parseUnit } from "./unitMethods";
-import { prefixPower } from "./units";
+import { binaryPrefixPower, prefixPower } from "./units";
 
 function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) : void {
 	if (num.exponent == '' || (units == null || units.length == 0)){
@@ -23,8 +23,9 @@ function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 
 	const firstUnit = units[0];
 	if (firstUnit.prefix != ''){
+		const unitPower = (firstUnit.power != null ? +(firstUnit.power) : 1) * (firstUnit.position == 'denominator' ? -1 : 1);			
 		const addedPower = prefixPower.get(firstUnit.prefix);
-		targetExponent += addedPower;
+		targetExponent += addedPower * unitPower;
 		// just in case prefix was cm (2) and we added 3, there's no prefix for 5
 		while (!prefixPower.revHas(targetExponent)) {
 			targetExponent++;
@@ -36,10 +37,47 @@ function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 	num.exponent = (Math.abs(newExponent)).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
 	convertToFixed(num, options);
+	
 }
 
 function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) : void {
-	console.log('not implemented');
+	if (units == null){
+		return;
+	}
+
+	let powersOfTen = 0;
+	//let powersOfTwo = 0;
+
+	for (let i= 0; i<units.length; i++) {
+		const unit = units[i];
+		if ((unit.prefix != '' && !options.extractMassInKilograms) || (unit.prefix != '' && options.extractMassInKilograms && unit.prefix != 'k' && unit.symbol != 'g')) {
+			const unitPower = (unit.power != null ? +(unit.power) : 1) * (unit.position == 'denominator' ? -1 : 1);
+			// if (binaryPrefixPower.has(unit.prefix)){
+			// 	const prefPower = binaryPrefixPower.get(unit.prefix);
+			// 	powersOfTwo += (prefPower*unitPower);
+			// } else {
+			if (prefixPower.has(unit.prefix)) {
+				const prefPower = prefixPower.get(unit.prefix);
+				powersOfTen += (prefPower*unitPower);
+			} else {
+				// Don't do anything to this prefix.  Can't convert it. Next unit...
+				continue;
+			}
+			unit.prefix = '';
+		}
+	}
+	console.log("powersOfTen: " + powersOfTen);
+	const currentExponent = (num.exponent != '' ? +(num.exponentSign + num.exponent) : 0);
+	console.log(currentExponent);
+	const newExponent = currentExponent + powersOfTen;
+	console.log(newExponent);
+	num.exponent = Math.abs(newExponent).toString();
+	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
+	if (num.exponentMarker == ''){
+		num.exponentMarker = 'e';
+	}
+	console.log(num);
+	console.log(units);
 }
 
 const prefixModeMap = new Map<PrefixMode, (num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions)=>void>([
