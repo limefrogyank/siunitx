@@ -5,19 +5,19 @@ function addSpacing(text:string, digitGroupSize:number, minimum: number, spacer:
 	if (text.length >= minimum){
 		const arr = text.split('');
 		let adjusted = 0;
-		const firstCount= digitGroupFirstSize != -1 ? digitGroupFirstSize : digitGroupSize;
+		const firstCount = (digitGroupFirstSize != -1 && digitGroupFirstSize != undefined) ? digitGroupFirstSize : digitGroupSize;
 		let fluidCount = firstCount;
 		if (reverse){
 			for (let i=firstCount; i < arr.length; i+=fluidCount){
 				text = text.slice(0,i + adjusted) + spacer + text.slice(i + adjusted, text.length + adjusted);
 				adjusted += spacer.length;
-				fluidCount = digitGroupOtherSize!= -1 ? digitGroupOtherSize : digitGroupSize;
+				fluidCount = (digitGroupOtherSize!= -1 && digitGroupOtherSize != undefined) ? digitGroupOtherSize : digitGroupSize;
 			}
 		} else {
 			for (let i=arr.length - firstCount; i >= 0; i-=fluidCount){
 				text = text.slice(0,i) + spacer + text.slice(i, text.length + adjusted);
 				adjusted += spacer.length;
-				fluidCount = digitGroupOtherSize!= -1 ? digitGroupOtherSize : digitGroupSize;
+				fluidCount = (digitGroupOtherSize!= -1 && digitGroupOtherSize != undefined) ? digitGroupOtherSize : digitGroupSize;
 			}
 		}
 	}
@@ -131,7 +131,7 @@ const uncertaintyModeMapping = new Map<string, ( uncertainty:IUncertainty, value
 
 export function displayNumber(piece:INumberPiece, options: INumOutputOptions) : string {
 	let output = '';
-	groupNumbersMap.get(options.groupDigits)(piece, options);	
+	groupNumbersMap.get(options.groupDigits)?.(piece, options);	
 
 	if (options.negativeColor != '') {
 		output += '{\\color{' + options.negativeColor + '}';
@@ -171,7 +171,7 @@ export function displayNumber(piece:INumberPiece, options: INumOutputOptions) : 
 	}
 	// display uncertanties (if not null)
 	piece.uncertainty?.forEach(v=>{
-		output += uncertaintyModeMapping.get(options.uncertaintyMode)(v,piece,options);
+		output += uncertaintyModeMapping.get(options.uncertaintyMode)?.(v,piece,options);
 	});
 
 	if (options.printZeroExponent && (piece.exponent == '' || (piece.exponent == '0'))){

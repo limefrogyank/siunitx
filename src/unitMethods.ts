@@ -39,7 +39,8 @@ const modifierMacros: Array<string> = new Array<string>(
 function processUnitMacro(macro:string, parser:TexParser) : IUnitMacroProcessResult {
 	macro = macro.substring(1);
 	if (modifierMacros.includes(macro)){
-		return processModifierMacro(macro,parser);
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+		return modifierMacroMap.get(macro)!(macro, parser);
 	} 
 
 	if (prefixSymbol.has(macro)) {
@@ -87,10 +88,6 @@ const modifierMacroMap = new Map<string, (macro:string, parser:TexParser)=>IUnit
 	}],
 ]);
 
-function processModifierMacro(macro:string, parser:TexParser) : IUnitMacroProcessResult{
-	return modifierMacroMap.get(macro)(macro, parser);
-}
-
 const qualiferMethod = new Map<QualifierMode, (qualifer:string, phrase?:string)=>string>([
 	['subscript', (qualifer:string):string => {return '_{'+ qualifer + '}';}],
 	['bracket', (qualifer:string):string => {return '('+ qualifer + ')';}],
@@ -109,7 +106,7 @@ function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower = false
 	unitLatex += options.unitFontCommand + '{';
 	unitLatex += '\\class{MathML-Unit}{' + unitPiece.prefix + unitPiece.symbol + '}';
 	if (unitPiece.qualifier){
-		unitLatex += qualiferMethod.get(options.qualifierMode)(unitPiece.qualifier, options.qualifierPhrase);
+		unitLatex += qualiferMethod.get(options.qualifierMode)?.(unitPiece.qualifier, options.qualifierPhrase);
 	}
 	unitLatex += '}';
 	const power = unitPiece.power != null 
@@ -132,8 +129,8 @@ function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower = false
 export function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: IOptions) : MmlNode {
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 
-	let texString:string;
-	let perForSingle: boolean;
+	let texString='';
+	let perForSingle = false;
 	if (unitPieces.length >= 2 && unitPieces.filter((v)=>{
 		const power = v.power != null 
 		? (v.power * (v.position == 'denominator' ? -1 : 1)) 
@@ -233,9 +230,9 @@ export function parseUnit(parser: TexParser, text:string, globalOptions: IOption
 	if (text.indexOf('\\') != -1){
 		const subParser = new TexParser(text, parser.stack.env, parser.configuration)
 		subParser.i = 0;
-		let nextModifier:IUnitPiece = null;
+		let nextModifier: IUnitPiece | null = null;
 		while (subParser.i < subParser.string.length){
-			const macro = subParser.GetArgument(null);
+			const macro = subParser.GetArgument('unit');
 			const processedMacro = processUnitMacro(macro, subParser);
 			// check for user defined options
 			if (processedMacro.options !== undefined){
@@ -319,6 +316,10 @@ function processPrefixUnitCombo(text:string, unitPiece:IUnitPiece): void{
 
 	const regex = new RegExp('(' + prefixes + ')?(' + units + ')');
 	const result = regex.exec(text);
+
+	if (result == null){
+		return;
+	}
 
 	if (result[1] !== undefined){
 		unitPiece.prefix = result[1];

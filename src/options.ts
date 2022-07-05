@@ -231,9 +231,8 @@ export const AngleOptionDefaults: IAngleOptions = {
 // Needed a new version of TexParser.GetBrackets because it wanted to parse the internal macros automatically.  
 // This method just gets the bracketed option string only.
 export function findOptions(parser:TexParser): string {
-	let options:string;
 	if (parser.GetNext() !== '['){
-		return options;
+		return '';
 	}
 	const j = ++parser.i;
 	let depth=0;

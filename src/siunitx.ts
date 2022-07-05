@@ -65,7 +65,7 @@ new CommandMap('siunitxMap', {
         // const testNode = parser.create('node', 'mtext');
         // const testdisplay = isDisplay(testNode);
         // console.log(testdisplay);
-        methodMap.get(name as string)(parser);
+        methodMap.get(name as string)?.(parser);
         // console.log(parser);
         // const display = isDisplay(node);
         // console.log(display);    
@@ -78,8 +78,7 @@ new CommandMap('siunitxMap', {
         GlobalParser = parser;
         const options = findOptions(parser);
         console.log(options);
-        declareMap.get(name as string)(parser,name as string, options);
-        
+        declareMap.get(name as string)?.(parser,name as string, options);        
     }
 });
 

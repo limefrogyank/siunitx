@@ -35,7 +35,7 @@ const NumberPieceDefault : INumberPiece = {
 	exponentMarker: '',
 	exponentSign: '',
 	exponent: '',
-	uncertainty: null
+	uncertainty: [] // this is temporary
 };
 
 const UncertaintyDefault: IUncertainty  = {
@@ -209,9 +209,9 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 						(mapping.get(char) as CharNumFunction)(char, num);
 					} else {
 						if (num.whole =='' && num.decimal == ''){
-							(func as Map<string,CharNumFunction>).get('inputSigns')(char, num);
+							(func as Map<string,CharNumFunction>).get('inputSigns')?.(char, num);
 						} else {
-							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')(char, num);
+							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')?.(char, num);
 						}
 					}					
 				}
@@ -232,9 +232,9 @@ export function parseNumber(parser:TexParser, text:string, options: INumOptions)
 						(mapping.get(macro) as CharNumFunction)(macro, num);
 					} else {
 						if (num.whole =='' && num.decimal == ''){
-							(func as Map<string,CharNumFunction>).get('inputSigns')(macro, num);
+							(func as Map<string,CharNumFunction>).get('inputSigns')?.(macro, num);
 						} else {
-							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')(macro, num);
+							(func as Map<string,CharNumFunction>).get('inputUncertaintySigns')?.(macro, num);
 						}
 					}
 				}
