@@ -69,15 +69,10 @@ new CommandMap('siunitxMap', {
         // console.log(parser);
         // const display = isDisplay(node);
         // console.log(display);    
-        const user = parser.configuration.packageData.get(UserDefinedUnitsKey);
-        const userOptions = parser.configuration.packageData.get(UserDefinedUnitOptionsKey);
-        console.log(user);
-        console.log(userOptions);
     },
     siunitxGlobal: (parser, name) => {
         GlobalParser = parser;
         const options = findOptions(parser);
-        console.log(options);
         declareMap.get(name as string)?.(parser,name as string, options);        
     }
 });
@@ -91,7 +86,6 @@ new CommandMap('siunitxMap', {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const config = (_config: ParserConfiguration, jax: TeX<any, any, any>) => {
-    console.log(_config.options);
     jax.parseOptions.packageData.set(UserDefinedUnitsKey, userDefinedUnits);
     jax.parseOptions.packageData.set(UserDefinedUnitOptionsKey, userDefinedUnitOptions);
 };
