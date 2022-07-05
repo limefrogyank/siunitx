@@ -128,7 +128,7 @@ function unitLatex(unitPiece: IUnitPiece, options:IUnitOptions, absPower = false
 	return {latex: unitLatex, superscriptPresent: power != 1 };
 }
 
-export function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: IOptions) : MmlNode {
+export function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, options: IOptions) : string {
 	//const mainOptions = parser.configuration.packageData.get('siunitx') as IUnitOptions;
 
 	let texString='';
@@ -221,7 +221,7 @@ export function displayUnits(parser:TexParser, unitPieces:Array<IUnitPiece>, opt
 
 		texString = latex;
 	}
-	return (new TexParser(texString, parser.stack.env, parser.configuration)).mml();	
+	return texString;
 
 }
 
@@ -302,9 +302,9 @@ export function processUnit(parser: TexParser): MmlNode {
 	const unitPieces = parseUnit(parser, text, globalOptions, localOptionString);
 	
 
-	const mml = displayUnits(parser, unitPieces, globalOptions);
+	const texString = displayUnits(parser, unitPieces, globalOptions);
 	
-	return mml;
+	return (new TexParser(texString, parser.stack.env, parser.configuration)).mml();	
 }
 
 function joinValues(values: IterableIterator<string>, joinString: string): string { 

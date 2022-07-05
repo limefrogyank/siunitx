@@ -4,7 +4,7 @@ import { CommandMap } from 'mathjax-full/js/input/tex/SymbolMap';
 import TexParser from 'mathjax-full/js/input/tex/TexParser';
 import { processAngle } from './angMethods';
 import { processNumber } from './numMethods';
-import { AngleOptionDefaults, findOptions, NumOptionDefaults, UnitOptionDefaults } from './options';
+import { AngleOptionDefaults, findOptions, NumOptionDefaults, QuantityOptionDefaults, UnitOptionDefaults } from './options';
 import { processQuantity } from './qtyMethods';
 import { processUnit } from './unitMethods';
 import { userDefinedUnitOptions, userDefinedUnits } from './units';
@@ -95,6 +95,6 @@ Configuration.create('siunitx',
     handler: { 
         macro: ['siunitxMap'] 
     }, 
-    options: {...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults},
+    options: {...UnitOptionDefaults, ...NumOptionDefaults, ...AngleOptionDefaults, ...QuantityOptionDefaults},
     config: config
 });

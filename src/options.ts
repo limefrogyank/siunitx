@@ -138,7 +138,7 @@ export interface IAngleOptions extends INumOptions {
 	numberAngleProduct: string
 }
 
-export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions { }
+export interface IOptions extends IUnitOptions, INumOptions, IAngleOptions, IQuantityOptions { }
 
 export const PrintOptionsDefault : IPrintOptions = {
 	color: '',
@@ -345,7 +345,7 @@ export function processOptions(globalOptions: IOptions, optionString: string) : 
 				} else if (typeof globalOptions[prop] === 'boolean') {
 					globalOptions[prop] = (value.trim() === 'true');
 				} else {
-					globalOptions[prop] = value.trim();
+					globalOptions[prop] = value;
 				}
 				prop = '';
 				value = '';
@@ -375,9 +375,9 @@ export function processOptions(globalOptions: IOptions, optionString: string) : 
 		} else if (typeof globalOptions[prop] === 'boolean') {
 			globalOptions[prop] = (value.trim() === 'true');
 		} else {
-			globalOptions[prop] = value.trim();
+			globalOptions[prop] = value;
 		}
 	}
 
-	//return options;
+	
 }

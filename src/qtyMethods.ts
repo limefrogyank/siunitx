@@ -7,11 +7,12 @@ import { displayUnits, parseUnit } from "./unitMethods";
 
 
 export function processQuantity(parser:TexParser): void {
-	const globalOptions : IOptions = {...parser.options as IOptions};
+	let globalOptions : IOptions = {...parser.options as IOptions};
 
 	const localOptionString = findOptions(parser);        
 
 	processOptions(globalOptions, localOptionString);
+
 
 	const numString = parser.GetArgument('num');
 	const unitString = parser.GetArgument('unit');
@@ -39,11 +40,15 @@ export function processQuantity(parser:TexParser): void {
 		parser.Push(numNode);
 	}
 
+	globalOptions = {...parser.options as IOptions};
 
 	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptionString);
 
-	const unitNode = displayUnits(parser, unitPieces, globalOptions);
+	let unitResult = displayUnits(parser, unitPieces, globalOptions);
 
+	unitResult = globalOptions.quantityProduct + unitResult;
+	
+	const unitNode = (new TexParser(unitResult, parser.stack.env, parser.configuration)).mml();
 	
 	parser.Push(unitNode);
 
