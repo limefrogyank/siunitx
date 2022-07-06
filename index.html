@@ -274,10 +274,11 @@ var qty = [
 	String.raw`\qty[extract-mass-in-kilograms = false]{10}{\kilo\gram\squared\deci\second}`,
 	String.raw`\qty[prefix-mode = extract-exponent, extract-mass-in-kilograms = false]{10}{\kilo\gram\squared\deci\second}`,
 	String.raw`\qty[prefix-mode = extract-exponent, extract-mass-in-kilograms = false]{7.5}{\gram}`,
+	String.raw`\qty[uncertainty-mode=separate]{12.3(4)}{\kilo\gram}`,
+	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = bracket]{12.3(4)}{\kilo\gram}`,
+	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = repeat]{12.3(4)}{\kilo\gram}`,
+	String.raw`\qty[uncertainty-mode=separate, separate-uncertainty-units = single]{12.3(4)}{\kilo\gram}`,
 	String.raw``,
-	String.raw``,
-	String.raw``,
-
 ];
 
 var table = document.getElementById('qtyTable');
@@ -294,11 +295,13 @@ for (var i = 0; i<qty.length; i++){
 
 var declareSIUnit = [
 	String.raw`\DeclareSIUnit[inter-unit-product = \times]{\hello}{FakeUnit} \unit{\hello\kg\second}`,
+	String.raw`\unit{\kg\second}`,
 	String.raw`\unit{\hello\kg\second}`,
 	String.raw`\unit[inter-unit-product = \,]{\hello\kg\second}`,
 	String.raw`\DeclareSIUnit{\faren}{\degree F} \unit{\faren\kg\second}`,
-	String.raw``,
-	String.raw``,
+	String.raw`\qty{1.2}{\faren}`,
+	
+	
 ];
 
 var table = document.getElementById('declareSIUnitTable');

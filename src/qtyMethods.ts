@@ -2,9 +2,9 @@ import TexParser from "mathjax-full/js/input/tex/TexParser";
 import { displayOutput } from "./numDisplayMethods";
 import { INumberPiece, parseNumber } from "./numMethods";
 import { convertToFixed, postProcessNumber } from "./numPostProcessMethods";
-import { findOptions, IOptions, IQuantityOptions, PrefixMode, processOptions } from "./options";
+import { findOptions, IOptions, IQuantityOptions, PrefixMode, processOptions, SeparateUncertaintyUnits } from "./options";
 import { displayUnits, IUnitPiece, parseUnit } from "./unitMethods";
-import { binaryPrefixPower, prefixPower } from "./units";
+import { prefixPower } from "./units";
 
 function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) : void {
 	if (num.exponent == '' || (units == null || units.length == 0)){
@@ -37,7 +37,6 @@ function combineExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 	num.exponent = (Math.abs(newExponent)).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
 	convertToFixed(num, options);
-	
 }
 
 function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions) : void {
@@ -66,18 +65,13 @@ function extractExponent(num: INumberPiece, units: IUnitPiece[], options: IQuant
 			unit.prefix = '';
 		}
 	}
-	console.log("powersOfTen: " + powersOfTen);
 	const currentExponent = (num.exponent != '' ? +(num.exponentSign + num.exponent) : 0);
-	console.log(currentExponent);
 	const newExponent = currentExponent + powersOfTen;
-	console.log(newExponent);
 	num.exponent = Math.abs(newExponent).toString();
 	num.exponentSign = Math.sign(newExponent) > 0 ? '' : '-';
 	if (num.exponentMarker == ''){
 		num.exponentMarker = 'e';
 	}
-	console.log(num);
-	console.log(units);
 }
 
 const prefixModeMap = new Map<PrefixMode, (num: INumberPiece, units: IUnitPiece[], options: IQuantityOptions)=>void>([
@@ -87,20 +81,42 @@ const prefixModeMap = new Map<PrefixMode, (num: INumberPiece, units: IUnitPiece[
 	['extract-exponent', extractExponent]
 ]);
 
+const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: string, units: string, options: IQuantityOptions)=>string>([
+	['single', (num: string, units: string, options: IQuantityOptions ): string => {
+		return num +  options.quantityProduct + units;
+	}],
+	['bracket', (num: string, units: string, options: IQuantityOptions ): string => {
+		return options.outputOpenUncertainty + num + options.outputCloseUncertainty + options.quantityProduct + units;
+	}],
+	['repeat', (num: string, units: string, options: IQuantityOptions ): string => {
+		// split the num from the uncertainty, split on \\pm
+		const split = num.split('\\pm');
+		let separate = '';
+		for (let i = 0; i < split.length; i++){
+			if (separate != ''){
+				separate += '\\pm';
+			}
+			separate += split[i];
+			separate += options.quantityProduct;
+			separate += units;
+		}
+		return separate;
+	}]
+]);
+
 export function processQuantity(parser:TexParser): void {
 	let globalOptions : IOptions = {...parser.options as IOptions};
 
 	const localOptionString = findOptions(parser);        
-
-	processOptions(globalOptions, localOptionString);
-
 
 	const numString = parser.GetArgument('num');
 	const unitString = parser.GetArgument('unit');
 
 	let numDisplay = '';
 	let unitDisplay = '';
-	let unitPieces: IUnitPiece[];
+
+	const unitPieces = parseUnit(parser, unitString, globalOptions, localOptionString);	
+	unitDisplay = displayUnits(parser, unitPieces, globalOptions);
 
 	if (globalOptions.parseNumbers){
 
@@ -109,40 +125,25 @@ export function processQuantity(parser:TexParser): void {
 			// TO-DO (BIG ONE)
 		}
 
+		// refresh global options from default
+		globalOptions = {...parser.options as IOptions};	
+		processOptions(globalOptions, localOptionString);
 		const num = parseNumber(parser,numString,globalOptions);
 		
-		// refresh global options from default
-		globalOptions = {...parser.options as IOptions};
-
-		unitPieces = parseUnit(parser, unitString, globalOptions, localOptionString);	
-
 		// convert number and unit if necessary
 		prefixModeMap.get(globalOptions.prefixMode)?.(num, unitPieces, globalOptions);
 				
 		postProcessNumber(num,globalOptions);
-		numDisplay = displayOutput(num, globalOptions);
-		
+		numDisplay = displayOutput(num, globalOptions);		
 
 	} else {
 		// can't do any conversions with number since processing is off
-		numDisplay = numString;
-		
-		// refresh global options from default
-		globalOptions = {...parser.options as IOptions};
-		unitPieces = parseUnit(parser, unitString, globalOptions, localOptionString);	
-		
+		numDisplay = numString;		
 	}
 
-	unitDisplay = displayUnits(parser, unitPieces, globalOptions);
-
-	unitDisplay = globalOptions.quantityProduct + unitDisplay;
-
-	const numNode = (new TexParser(numDisplay, parser.stack.env, parser.configuration)).mml();
-	parser.Push(numNode);
-
-
-	const unitNode = (new TexParser(unitDisplay, parser.stack.env, parser.configuration)).mml();
+	const qtyDisplay = separateUncertaintyUnitsMap.get(globalOptions.separateUncertaintyUnits)(numDisplay, unitDisplay, globalOptions);
 	
-	parser.Push(unitNode);
+	const qtyNode = (new TexParser(qtyDisplay, parser.stack.env, parser.configuration)).mml();	
+	parser.Push(qtyNode);
 
 }

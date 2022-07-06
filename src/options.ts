@@ -11,7 +11,7 @@ type UncertaintyMode = 'separate'|'compact'|'full'|'compact-marker';
 type UncertaintyDescriptorMode = 'bracket'|'bracket-separator'|'separator'|'subscript';
 type AngleMode = 'input' | 'arc' | 'decimal';
 export type PrefixMode = 'input' | 'combine-exponent' | 'extract-exponent';
-type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single'; 
+export type SeparateUncertaintyUnits = 'bracket' | 'repeat' | 'single'; 
 
 export interface IPrintOptions {
 	color: string;						// not implemented
