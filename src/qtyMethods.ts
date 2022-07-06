@@ -86,6 +86,9 @@ const separateUncertaintyUnitsMap = new Map<SeparateUncertaintyUnits, (num: stri
 		return num +  options.quantityProduct + units;
 	}],
 	['bracket', (num: string, units: string, options: IQuantityOptions ): string => {
+		if (num.indexOf('\\pm') == -1){
+			return num + options.quantityProduct + units;
+		}
 		return options.outputOpenUncertainty + num + options.outputCloseUncertainty + options.quantityProduct + units;
 	}],
 	['repeat', (num: string, units: string, options: IQuantityOptions ): string => {
